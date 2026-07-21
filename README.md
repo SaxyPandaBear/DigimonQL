@@ -30,4 +30,15 @@ go run server.go
 ```
 
 ### Scraping the data
-TBD
+This assumes you already have a Python virtual environment configured in `./scraper`
+```bash
+cd scraper && source bin/activate
+```
+
+Install dependencies and execute the scraper:
+```bash
+pip install -r requirements.txt && python scrape.py
+```
+
+The script should output a JSON file to `../data/digimon.json`, which will then be used to serve data
+in the GraphQL API.
