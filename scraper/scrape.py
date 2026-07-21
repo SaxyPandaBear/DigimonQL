@@ -6,7 +6,7 @@ from reference import digimon_names, known_mode_variants
 import json
 import requests
 
-output_path = "./digimon.json"
+output_path = "../data/digimon.json"
 url_template = "https://digimon.net/reference_en/detail.php?directory_name="  # url param is the CASE SENSITIVE name of the digimon
 img_domain = "https://digimon.net/"
 
@@ -88,7 +88,7 @@ def main():
 
         result = dict()
         result["id"] = name  # identifier is the name used in the URL for the digimon
-        result["name_en"] = english_name  # futureproofing this by suffixing with `en`
+        result["name"] = english_name  # TODO: how should this handle localized names?
         result["level"] = digimon_level
         result["type"] = digimon_type
         result["attribute"] = clean_attribute(digimon_attr)
@@ -98,6 +98,7 @@ def main():
         result["previous_digivolutions"] = []  # not derivable from Reference Book, expected values are id values of other digimon
         result["next_digivolutions"] = []
         result["is_mode"] = name in known_mode_variants or " Mode" in english_name
+        result["modes"] = []  # keep track of the modes that a Digimon can change to from here
         result["is_x_antibody"] = "(X Antibody)" in english_name
 
         data.append(result)

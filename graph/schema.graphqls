@@ -1,0 +1,17 @@
+type Digimon {
+    id: ID!
+    name: String!
+    level: String!
+    attribute: String!
+    moves: [String!]!
+    imgSrc: String!
+    background: String!
+    previousDigivolutions: [String!]
+    nextDigivolutions: [String!]
+    isMode: Boolean
+    isXAntibody: Boolean
+}
+
+type Query {
+    digimon(id: ID!): Digimon
+}

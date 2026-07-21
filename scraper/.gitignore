@@ -4,4 +4,3 @@ bin/
 include/
 lib/
 pyvenv.cfg
-digimon.json  # TODO: commit this file after successfully generated and verified
