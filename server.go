@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -13,13 +14,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/ast"
+	limit "github.com/yangxikun/gin-limit-by-key"
+	"golang.org/x/time/rate"
 	"saxypandabear.github.com/digimonql/graph"
 	"saxypandabear.github.com/digimonql/graph/model"
 )
-
-type LocalData struct {
-	Digimon []*model.Digimon
-}
 
 func loadLocalData() []*model.Digimon {
 	f, err := os.Open("./data/digimon.json")
@@ -32,14 +31,14 @@ func loadLocalData() []*model.Digimon {
 		log.Fatal("Failed to read data file ", err)
 	}
 
-	var payload LocalData
+	var payload []*model.Digimon
 	err = json.Unmarshal(content, &payload)
 
 	if err != nil {
 		log.Fatal("Failed to parse JSON ", err)
 	}
 
-	return payload.Digimon
+	return payload
 }
 
 func graphqlHandler() gin.HandlerFunc {
@@ -75,8 +74,20 @@ func playgroundHandler() gin.HandlerFunc {
 	}
 }
 
+func rateLimitHandler() gin.HandlerFunc {
+	return limit.NewRateLimiter(func(c *gin.Context) string {
+		return c.ClientIP() // limit rate by client ip
+	}, func(c *gin.Context) (*rate.Limiter, time.Duration) {
+		return rate.NewLimiter(rate.Every(100*time.Millisecond), 1000), time.Hour // limit 10 qps/clientIp and permit bursts of at most 10 tokens, and the limiter liveness time duration is 1 hour
+	}, func(c *gin.Context) {
+		c.AbortWithStatus(429) // handle exceed rate limit request
+	})
+}
+
 func main() {
 	r := gin.Default()
+	r.Use(rateLimitHandler())
+
 	r.POST("/query", graphqlHandler())
 	r.GET("/", playgroundHandler())
 	r.Run()
