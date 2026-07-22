@@ -30,7 +30,11 @@ go run server.go
 ```
 
 ### Scraping the data
-This assumes you already have a Python virtual environment configured in `./scraper`
+
+IMPORTANT NOTE: Just running the scraper does not provide the full set of data right now, 
+as things need to be added manually such as the mappings for evolutions and mode changes.
+
+These steps assumes you already have a Python virtual environment configured in `./scraper`
 ```bash
 cd scraper && source bin/activate
 ```
