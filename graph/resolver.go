@@ -1,7 +1,9 @@
 package graph
 
 //go:generate go tool gqlgen generate
-import "saxypandabear.github.com/digimonql/graph/model"
+import (
+	"saxypandabear.github.com/digimonql/db"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -9,12 +11,12 @@ import "saxypandabear.github.com/digimonql/graph/model"
 // here.
 
 type Resolver struct {
-	digimons []*model.Digimon // TODO: replace this with a database impl
+	Database db.DigimonRepository
 }
 
 // TODO: replace this with a database
-func NewGraphResolver(digimons []*model.Digimon) *Resolver {
+func NewGraphResolver(database db.DigimonRepository) *Resolver {
 	return &Resolver{
-		digimons: digimons,
+		Database: database,
 	}
 }

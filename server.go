@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -15,7 +16,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vektah/gqlparser/v2/ast"
 	limit "github.com/yangxikun/gin-limit-by-key"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"golang.org/x/time/rate"
+	"saxypandabear.github.com/digimonql/db"
 	"saxypandabear.github.com/digimonql/graph"
 	"saxypandabear.github.com/digimonql/graph/model"
 )
@@ -41,13 +45,10 @@ func loadLocalData() []*model.Digimon {
 	return payload
 }
 
-func graphqlHandler() gin.HandlerFunc {
-	// TODO: replace this with a database connection
-	data := loadLocalData()
-
+func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: graph.NewGraphResolver(data)}))
+	h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: graph.NewGraphResolver(database)}))
 
 	// Server setup:
 	h.AddTransport(transport.Options{})
@@ -84,11 +85,36 @@ func rateLimitHandler() gin.HandlerFunc {
 	})
 }
 
+func instantiateDatabase() db.DigimonRepository {
+	mongoUrl, ok := os.LookupEnv("MONGO_URL")
+	if !ok {
+		// no MongoDB env vars found, so try to load the local JSON file
+		fmt.Println("Falling back to local JSON file for data...")
+		return &db.LocalDigimonRepository{
+			Digimons: loadLocalData(),
+		}
+	}
+
+	// connect to the MongoDB instance
+	fmt.Println("Connecting to MongoDB instance...") // TODO: switch to logger package
+	client, err := mongo.Connect(options.Client().ApplyURI(mongoUrl).SetTimeout(200 * time.Millisecond))
+	if err != nil {
+		log.Fatal("Failed to connect to MongoDB ", err)
+	}
+
+	return &db.MongoDBRepository{
+		Client: client,
+	}
+}
+
 func main() {
 	r := gin.Default()
 	r.Use(rateLimitHandler())
 
-	r.POST("/query", graphqlHandler())
+	d := instantiateDatabase()
+	defer d.Close()
+
+	r.POST("/query", graphqlHandler(d))
 	r.GET("/", playgroundHandler())
 	r.Run()
 }

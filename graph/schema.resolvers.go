@@ -7,22 +7,13 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"saxypandabear.github.com/digimonql/graph/model"
 )
 
 // Digimon is the resolver for the digimon field.
 func (r *queryResolver) Digimon(ctx context.Context, id string) (*model.Digimon, error) {
-	// TODO: add a real database
-	for i := 0; i < len(r.digimons); i++ {
-		digi := r.digimons[i]
-		if id == digi.ID {
-			return digi, nil
-		}
-	}
-
-	return nil, fmt.Errorf("Could not find Digimon with ID: %s", id)
+	return r.Database.GetDigimonByID(ctx, id)
 }
 
 // Query returns QueryResolver implementation.
