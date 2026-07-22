@@ -46,3 +46,15 @@ pip install -r requirements.txt && python scrape.py
 
 The script should output a JSON file to `../data/digimon.json`, which will then be used to serve data
 in the GraphQL API.
+
+#### Importing scraped data into MongoDB
+The intent is to back the API with MongoDB documents. After installing `mongoimport`, you can directly
+load the output JSON file into a collection. Note that out of the box, the JSON output from the scraper
+is incomplete.
+
+Load the data to your desired MongoDB instance:
+```bash
+mongoimport --jsonArray --authenticationDatabase=admin --drop mongodb://something ./data/digimon.json
+```
+This example includes the `--drop` flag in order to completely refresh the collection. Not sure if there's
+a clean way to do full upserts of the database.

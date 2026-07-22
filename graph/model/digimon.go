@@ -1,7 +1,7 @@
 package model
 
 type Digimon struct {
-	ID                    string   `json:"id"`
+	ID                    string   `json:"_id"`
 	Name                  string   `json:"name"`
 	Level                 string   `json:"level"`
 	Type                  string   `json:"type"`

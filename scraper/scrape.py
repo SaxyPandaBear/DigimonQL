@@ -87,7 +87,7 @@ def main():
         digimon_moves = parse_special_moves(values[3])
 
         result = dict()
-        result["id"] = name  # identifier is the name used in the URL for the digimon
+        result["_id"] = name  # identifier is the name used in the URL for the digimon - uses underscore prefix for MongoDB semantics
         result["name"] = english_name  # TODO: how should this handle localized names?
         result["level"] = digimon_level
         result["type"] = digimon_type
