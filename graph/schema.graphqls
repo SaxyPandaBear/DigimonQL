@@ -9,9 +9,21 @@ type Digimon {
     previousDigivolutions: [String!]
     nextDigivolutions: [String!]
     isMode: Boolean
+    modes: [String!]
+    isXAntibody: Boolean
+}
+
+input Filter {
+    name: String
+    level: String
+    attribute: String
+    moves: [String!]
+    isMode: Boolean
     isXAntibody: Boolean
 }
 
 type Query {
     digimon(id: ID!): Digimon
+    digimons(input: Filter): [Digimon]!
+    count: Int
 }

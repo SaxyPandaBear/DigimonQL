@@ -2,7 +2,7 @@ package graph
 
 //go:generate go tool gqlgen generate
 import (
-	"saxypandabear.github.com/digimonql/db"
+	"github.com/saxypandabear/digimonql/db"
 )
 
 // This file will not be regenerated automatically.

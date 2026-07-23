@@ -8,12 +8,24 @@ package graph
 import (
 	"context"
 
-	"saxypandabear.github.com/digimonql/graph/model"
+	"github.com/saxypandabear/digimonql/graph/model"
 )
 
 // Digimon is the resolver for the digimon field.
 func (r *queryResolver) Digimon(ctx context.Context, id string) (*model.Digimon, error) {
 	return r.Database.GetDigimonByID(ctx, id)
+}
+
+// Digimons is the resolver for the digimons field.
+func (r *queryResolver) Digimons(ctx context.Context, input *model.Filter) ([]*model.Digimon, error) {
+	return r.Database.ListDigimon(ctx, input)
+}
+
+// Count is the resolver for the count field.
+func (r *queryResolver) Count(ctx context.Context) (*int32, error) {
+	c, err := r.Database.Count(ctx)
+	casted := int32(c)
+	return &casted, err
 }
 
 // Query returns QueryResolver implementation.

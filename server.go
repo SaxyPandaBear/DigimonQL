@@ -14,14 +14,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"github.com/saxypandabear/digimonql/db"
+	"github.com/saxypandabear/digimonql/graph"
+	"github.com/saxypandabear/digimonql/graph/model"
 	"github.com/vektah/gqlparser/v2/ast"
 	limit "github.com/yangxikun/gin-limit-by-key"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"golang.org/x/time/rate"
-	"saxypandabear.github.com/digimonql/db"
-	"saxypandabear.github.com/digimonql/graph"
-	"saxypandabear.github.com/digimonql/graph/model"
 )
 
 func loadLocalData() []*model.Digimon {

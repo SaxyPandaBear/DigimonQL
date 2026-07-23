@@ -12,5 +12,6 @@ type Digimon struct {
 	PreviousDigivolutions []string `json:"previous_digivolutions" bson:"previous_digivolutions,omitempty"`
 	NextDigivolutions     []string `json:"next_digivolutions" bson:"next_digivolutions,omitempty"`
 	IsMode                bool     `json:"is_mode" bson:"is_mode,omitempty"`
+	Modes                 []string `json:"modes" bson:"modes,omitempty"`
 	IsXAntibody           bool     `json:"is_x_antibody" bson:"is_x_antibody,omitempty"`
 }

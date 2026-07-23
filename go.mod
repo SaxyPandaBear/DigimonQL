@@ -1,4 +1,4 @@
-module saxypandabear.github.com/digimonql
+module github.com/saxypandabear/digimonql
 
 go 1.25.0
 

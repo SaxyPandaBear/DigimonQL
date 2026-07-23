@@ -14,9 +14,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/saxypandabear/digimonql/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"saxypandabear.github.com/digimonql/graph/model"
 )
 
 // region    ***************************** api!.gotpl *****************************
@@ -44,6 +44,7 @@ type ComplexityRoot struct {
 		IsMode                func(childComplexity int) int
 		IsXAntibody           func(childComplexity int) int
 		Level                 func(childComplexity int) int
+		Modes                 func(childComplexity int) int
 		Moves                 func(childComplexity int) int
 		Name                  func(childComplexity int) int
 		NextDigivolutions     func(childComplexity int) int
@@ -51,7 +52,9 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Digimon func(childComplexity int, id string) int
+		Count    func(childComplexity int) int
+		Digimon  func(childComplexity int, id string) int
+		Digimons func(childComplexity int, input *model.Filter) int
 	}
 }
 
@@ -61,6 +64,8 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	Digimon(ctx context.Context, id string) (*model.Digimon, error)
+	Digimons(ctx context.Context, input *model.Filter) ([]*model.Digimon, error)
+	Count(ctx context.Context) (*int32, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -123,6 +128,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Digimon.Level(childComplexity), true
+	case "Digimon.modes":
+		if e.ComplexityRoot.Digimon.Modes == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Digimon.Modes(childComplexity), true
 	case "Digimon.moves":
 		if e.ComplexityRoot.Digimon.Moves == nil {
 			break
@@ -148,6 +159,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Digimon.PreviousDigivolutions(childComplexity), true
 
+	case "Query.count":
+		if e.ComplexityRoot.Query.Count == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Query.Count(childComplexity), true
 	case "Query.digimon":
 		if e.ComplexityRoot.Query.Digimon == nil {
 			break
@@ -159,6 +176,17 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Query.Digimon(childComplexity, args["id"].(string)), true
+	case "Query.digimons":
+		if e.ComplexityRoot.Query.Digimons == nil {
+			break
+		}
+
+		args, err := ec.field_Query_digimons_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Digimons(childComplexity, args["input"].(*model.Filter)), true
 
 	}
 	return 0, false
@@ -167,7 +195,9 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputFilter,
+	)
 	first := true
 
 	switch opCtx.Operation.Operation {
@@ -268,6 +298,8 @@ func (ec *executionContext) childFields_Digimon(ctx context.Context, field graph
 		return ec.fieldContext_Digimon_nextDigivolutions(ctx, field)
 	case "isMode":
 		return ec.fieldContext_Digimon_isMode(ctx, field)
+	case "modes":
+		return ec.fieldContext_Digimon_modes(ctx, field)
 	case "isXAntibody":
 		return ec.fieldContext_Digimon_isXAntibody(ctx, field)
 	}
@@ -415,6 +447,20 @@ func (ec *executionContext) field_Query_digimon_args(ctx context.Context, rawArg
 		return nil, err
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_digimons_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (*model.Filter, error) {
+			return ec.unmarshalOFilter2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐFilter(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -708,6 +754,29 @@ func (ec *executionContext) fieldContext_Digimon_isMode(_ context.Context, field
 	return graphql.NewScalarFieldContext("Digimon", field, false, false, errors.New("field of type Boolean does not have child fields"))
 }
 
+func (ec *executionContext) _Digimon_modes(ctx context.Context, field graphql.CollectedField, obj *model.Digimon) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Digimon_modes(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.Modes, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []string) graphql.Marshaler {
+			return ec.marshalOString2ᚕstringᚄ(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Digimon_modes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Digimon", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
 func (ec *executionContext) _Digimon_isXAntibody(ctx context.Context, field graphql.CollectedField, obj *model.Digimon) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -745,7 +814,7 @@ func (ec *executionContext) _Query_digimon(ctx context.Context, field graphql.Co
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v *model.Digimon) graphql.Marshaler {
-			return ec.marshalODigimon2ᚖsaxypandabearᚗgithubᚗcomᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, selections, v)
+			return ec.marshalODigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, selections, v)
 		},
 		true,
 		false,
@@ -773,6 +842,73 @@ func (ec *executionContext) fieldContext_Query_digimon(ctx context.Context, fiel
 		return fc, err
 	}
 	return fc, nil
+}
+
+func (ec *executionContext) _Query_digimons(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_digimons(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Digimons(ctx, fc.Args["input"].(*model.Filter))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Digimon) graphql.Marshaler {
+			return ec.marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_digimons(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Digimon(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_digimons_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_count(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_count(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return ec.Resolvers.Query().Count(ctx)
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v *int32) graphql.Marshaler {
+			return ec.marshalOInt2ᚖint32(ctx, selections, v)
+		},
+		true,
+		false,
+	)
+}
+func (ec *executionContext) fieldContext_Query_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Query", field, true, true, errors.New("field of type Int does not have child fields"))
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1910,6 +2046,71 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputFilter(ctx context.Context, obj any) (model.Filter, error) {
+	var it model.Filter
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "level", "attribute", "moves", "isMode", "isXAntibody"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "level":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("level"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Level = data
+		case "attribute":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attribute"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Attribute = data
+		case "moves":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moves"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Moves = data
+		case "isMode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isMode"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsMode = data
+		case "isXAntibody":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isXAntibody"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsXAntibody = data
+		}
+	}
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1980,6 +2181,11 @@ func (ec *executionContext) _Digimon(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.RequiredNull {
 				out.Invalids++
 			}
+		case "modes":
+			out.Values[i] = ec._Digimon_modes(ctx, field, obj)
+			if out.Values[i] == graphql.RequiredNull {
+				out.Invalids++
+			}
 		case "isXAntibody":
 			out.Values[i] = ec._Digimon_isXAntibody(ctx, field, obj)
 			if out.Values[i] == graphql.RequiredNull {
@@ -2036,6 +2242,50 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_digimon(ctx, field)
+				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "digimons":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_digimons(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "count":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_count(ctx, field)
 				if res == graphql.RequiredNull {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -2491,6 +2741,16 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx context.Context, sel ast.SelectionSet, v []*model.Digimon) graphql.Marshaler {
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalODigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, sel, v[i])
+	})
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2722,11 +2982,37 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalODigimon2ᚖsaxypandabearᚗgithubᚗcomᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx context.Context, sel ast.SelectionSet, v *model.Digimon) graphql.Marshaler {
+func (ec *executionContext) marshalODigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx context.Context, sel ast.SelectionSet, v *model.Digimon) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Digimon(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFilter2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐFilter(ctx context.Context, v any) (*model.Filter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint32(ctx context.Context, v any) (*int32, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt32(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.SelectionSet, v *int32) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalInt32(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
