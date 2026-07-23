@@ -36,25 +36,6 @@ func (r *MongoDBRepository) GetDigimonByID(ctx context.Context, id string) (*mod
 	return &d, nil
 }
 
-// func translateFilterToBson(filter *model.Filter) bson.M {
-// 	if filter == nil {
-// 		return bson.M{}
-// 	}
-
-// 	result := bson.M{}
-// 	if filter.Name != nil {
-// 		result["name"] = *filter.Name
-// 	}
-// 	if filter.Level != nil {
-// 		result["level"] = *filter.Level
-// 	}
-// 	if filter.Attribute != nil {
-// 		result["attribute"] =
-// 	}
-
-// 	return result
-// }
-
 func (r *MongoDBRepository) ListDigimon(ctx context.Context, filter *model.Filter) ([]*model.Digimon, error) {
 	coll := r.Client.Database(databaseName).Collection(collectionName)
 

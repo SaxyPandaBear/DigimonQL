@@ -11,8 +11,6 @@ type LocalDigimonRepository struct {
 	Digimons []*model.Digimon
 }
 
-var _ DigimonRepository = &LocalDigimonRepository{}
-
 func (r *LocalDigimonRepository) GetDigimonByID(_ context.Context, id string) (*model.Digimon, error) {
 	for i := 0; i < len(r.Digimons); i++ {
 		digi := r.Digimons[i]
