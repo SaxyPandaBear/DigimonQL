@@ -97,7 +97,12 @@ func instantiateDatabase() db.DigimonRepository {
 
 	// connect to the MongoDB instance
 	fmt.Println("Connecting to MongoDB instance...") // TODO: switch to logger package
-	client, err := mongo.Connect(options.Client().ApplyURI(mongoUrl).SetTimeout(200 * time.Millisecond))
+	bsonOpts := &options.BSONOptions{
+		UseJSONStructTags: true, // gql generated structs don't include BSON tags
+		OmitEmpty:         true,
+	}
+	opts := options.Client().ApplyURI(mongoUrl).SetTimeout(200 * time.Millisecond).SetBSONOptions(bsonOpts)
+	client, err := mongo.Connect(opts)
 	if err != nil {
 		log.Fatal("Failed to connect to MongoDB ", err)
 	}

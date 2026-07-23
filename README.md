@@ -29,6 +29,12 @@ Run the server:
 go run server.go
 ```
 
+### Testing
+Local tests
+```bash
+go test ./... -v
+```
+
 ### Scraping the data
 
 IMPORTANT NOTE: Just running the scraper does not provide the full set of data right now, 
