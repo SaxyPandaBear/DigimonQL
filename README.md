@@ -6,6 +6,9 @@ Main source of truth is the [Digimon Reference Book](https://digimon.net/referen
 
 My hope is to expose an API that is easy to operate on, vetted against good source data, so that the Digimon community can flourish. The intent of this project is *not* to build a repository for the Digimon TCG - that already exists. 
 
+Note: It is an intentional design choice because of the one-to-many nature of digivolutions to not implement a nested model.
+Had it been done that way, the complexity of the return value would create too much overhead because of the branching.
+
 ## Usage
 TBD
 

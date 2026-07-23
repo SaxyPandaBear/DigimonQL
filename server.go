@@ -61,6 +61,7 @@ func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
 	h.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New[string](100),
 	})
+	h.Use(extension.FixedComplexityLimit(5)) // future-proofing for nested documents
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
