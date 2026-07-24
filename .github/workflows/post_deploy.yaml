@@ -7,6 +7,9 @@ on:
 jobs:
   post-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./scraper
     permissions:
       contents: read # access to check out code and install dependencies
     if: github.event.deployment_status.state == 'success'
@@ -16,8 +19,9 @@ jobs:
         with:
           python-version: '3.14'
           cache: 'pip'
-      - run: pip install -r ./scraper/requirements.py
+      - run: pip install -r requirements.py
       - name: Verify GraphQL API works as expected
-        run: python scraper/smoke_test.py
+
+        run: python smoke_test.py
         env:
           API_BASE_URL: ${{ vars.API_BASE_URL }}  # the base URL to request against
