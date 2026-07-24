@@ -74,7 +74,7 @@ def main():
 
     # create a multi-function query that tests all of the functionality in one request,
     # in order to minimize separate calls for network egress.
-    query = """
+    query_str = """
     query {
         digimon(id: "burgamon") {
             digimonType
@@ -90,9 +90,13 @@ def main():
         count
     }
     """
+    query = {
+        "query": query_str
+    }
     resp = requests.post(f"{base_url}/query", query, headers={"Content-Type": "application/json; charset=utf-8"})
     if resp.status_code != 200:
         print(f"Expected status code 200, but got {resp.status_code}")
+        print(resp.json())
         exit(1)
     r = resp.json()
     if "errors" in r:
