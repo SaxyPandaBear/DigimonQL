@@ -24,4 +24,4 @@ jobs:
 
         run: python smoke_test.py
         env:
-          API_BASE_URL: ${{ vars.API_BASE_URL }}  # the base URL to request against
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}  # the base URL to request against
