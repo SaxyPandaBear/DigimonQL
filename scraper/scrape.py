@@ -1,7 +1,8 @@
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
 from bs4 import BeautifulSoup
 from time import sleep
-from reference import digimon_names, known_mode_variants
+from names import digimon_names
+from modes import known_mode_variants
 
 import json
 import requests
