@@ -91,9 +91,9 @@ def main():
     }
     """
     query = {
-      "query": "{ digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: {digimonType: \"Food\"}) { name digimonType level } count}"
+      "query": "query IntegrationTest { digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: {digimonType: \"Food\"}) { name digimonType level } count}"
     }
-    resp = requests.post(f"{base_url}/query", data=query, headers={"Content-Type": "application/json; charset=utf-8"})
+    resp = requests.post(f"{base_url}/query", json=query, headers={"Content-Type": "application/json; charset=utf-8"})
     if resp.status_code != 200:
         print(f"Expected status code 200, but got {resp.status_code}")
         print(resp.json())
