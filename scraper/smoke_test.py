@@ -90,10 +90,8 @@ def main():
         count
     }
     """
-    # query_str has properly escaped quotes in the input
-    query_str = "{\"query\": \"query IntegrationTest { digimon(id: \\\"burgamon\\\") { digimonType name level attribute } digimons(input: {digimonType: \\\"Food\\\"}) { name digimonType level } count}\"}"
     query = {
-        "query": query_str
+      "query": "{ digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: {digimonType: \"Food\"}) { name digimonType level } count}"
     }
     resp = requests.post(f"{base_url}/query", data=query, headers={"Content-Type": "application/json; charset=utf-8"})
     if resp.status_code != 200:
