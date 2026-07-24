@@ -11,10 +11,18 @@ and unlike something like Pokemon, the evolution chains are nonunique.
 
 # track a digimon and the set of digimon that they can evolve into
 next_evolutions = {
-
+    "omegamon": ["omegamon_merciful", "imperialdramonpaladinmode"],
+    "imperialdramonfightermode": ["imperialdramonpaladinmode"],
+    "lucemon": ["rucemonfalldownmode"],
+    "rucemonfalldownmode": ["lucemonsatanmode", "lucemonlarva"],
+    "alphamon": ["alphamon:ouryuken"],
+    "ouryumon": ["alphamon:ouryuken"]
 }
 
 # track a digimon and the set of digimon that they can come from
 previous_evolutions = {
-
+    "rucemonfalldownmode": ["lucemon"],
+    "lucemonsatanmode": ["rucemonfalldownmode"],
+    "lucemonlarva": ["rucemonfalldownmode"],
+    "alphamon:ouryuken": ["alphamon", "ouryumon"]
 }
