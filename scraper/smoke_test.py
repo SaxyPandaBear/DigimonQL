@@ -102,10 +102,15 @@ def main():
     if "errors" in r:
         print("There are errors returned from the API:")
         print(r["errors"])
+        exit(1)
+    if "data" not in r:
+        print("No output data found in response body...")
+        print(r)
+        exit(1)
 
-    single_query = r["digimon"]
-    filter_query = r["digimons"]
-    count_query = r["count"]
+    single_query = r["data"]["digimon"]
+    filter_query = r["data"]["digimons"]
+    count_query = r["data"]["count"]
 
     # if the code makes it this far, each of the queries returned something, so don't fail-fast here
     failed = False
