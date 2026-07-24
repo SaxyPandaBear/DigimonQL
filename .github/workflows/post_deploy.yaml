@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: '3.14'
           cache: 'pip'
-      - run: pip install -r requirements.py
+      - run: pip install -r requirements.txt
       - name: Verify GraphQL API works as expected
 
         run: python smoke_test.py
