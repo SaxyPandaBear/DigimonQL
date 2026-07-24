@@ -1,21 +1,44 @@
+"""
+A Digimon, as defined by their entry in the Digimon Encyclopedia.
+
+See: https://digimon.net/reference_en/
+"""
 type Digimon {
+    "The directory name for a given Digimon so they can be looked up in the Encyclopedia"
     id: ID!
+    "The English localized name of a Digimon"
     name: String!
+    "The level/stage of a Digimon. There is a static set of unique values for this attribute, and acts like an enumeration"
     level: String!
+    """
+    This value does *not* reflect the type system in the way that they are represented in franchises like Pokemon.
+    A Digimon's type is like a descriptor or defining characteristic of the Digimon.
+    """
+    digimonType: String!
+    "Not to be confused with a Digimon's type, the attribute functions like the type-based system of other franchises, like Pokemon."
     attribute: String!
+    "A list of special moves that a Digimon can invoke"
     moves: [String!]!
+    "The derived URL for the official image reference in the Digimon Encyclopedia for a Digimon"
     imgSrc: String!
+    "The longform description of the Digimon"
     background: String!
+    "A list of Digimon IDs/directory names for the Digimon that can evolve into this one"
     previousDigivolutions: [String!]
+    "A list of Digimon IDs/directory names for the Digimon that this Digimon can evolve into"
     nextDigivolutions: [String!]
+    "A flag to indicate whether this Digimon is a mode variant for a base Digimon species"
     isMode: Boolean
+    "A list of Digimon IDs/directory names for the Digimon that this Digimon can transform into via mode changes"
     modes: [String!]
+    "A flag to indicate whether this Digimon is an X-Antibody variant of a base Digimon species"
     isXAntibody: Boolean
 }
 
 input Filter {
     name: String
     level: String
+    digimonType: String
     attribute: String
     moves: [String!]
     isMode: Boolean
@@ -23,7 +46,10 @@ input Filter {
 }
 
 type Query {
+    "Fetch a single Digimon by passing in the case-sensitive directory name of the Digimon."
     digimon(id: ID!): Digimon
+    "Fetch a list of Digimon, with an optional filter argument. An empty filter will return the full set of Digimon."
     digimons(input: Filter): [Digimon]!
+    "Fetch the total number of registered Digimon."
     count: Int
 }

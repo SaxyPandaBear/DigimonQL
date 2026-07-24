@@ -4,7 +4,7 @@ type Digimon struct {
 	ID                    string   `json:"_id" bson:"_id,omitempty"`
 	Name                  string   `json:"name" bson:"name,omitempty"`
 	Level                 string   `json:"level" bson:"level,omitempty"`
-	Type                  string   `json:"type" bson:"type,omitempty"`
+	DigimonType           string   `json:"type" bson:"type,omitempty"`
 	Attribute             string   `json:"attribute" bson:"attribute,omitempty"`
 	Moves                 []string `json:"moves" bson:"moves,omitempty"`
 	ImgSrc                string   `json:"img_src" bson:"img_src,omitempty"`

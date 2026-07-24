@@ -44,6 +44,9 @@ func matchesFilter(digimon *model.Digimon, filter *model.Filter) bool {
 	if filter.Level != nil && digimon.Level != *filter.Level {
 		return false
 	}
+	if filter.DigimonType != nil && digimon.DigimonType != *filter.DigimonType {
+		return false
+	}
 	if filter.Attribute != nil && digimon.Attribute != *filter.Attribute {
 		return false
 	}

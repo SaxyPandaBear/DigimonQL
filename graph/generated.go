@@ -39,6 +39,7 @@ type ComplexityRoot struct {
 	Digimon struct {
 		Attribute             func(childComplexity int) int
 		Background            func(childComplexity int) int
+		DigimonType           func(childComplexity int) int
 		ID                    func(childComplexity int) int
 		ImgSrc                func(childComplexity int) int
 		IsMode                func(childComplexity int) int
@@ -98,6 +99,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Digimon.Background(childComplexity), true
+	case "Digimon.digimonType":
+		if e.ComplexityRoot.Digimon.DigimonType == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Digimon.DigimonType(childComplexity), true
 	case "Digimon.id":
 		if e.ComplexityRoot.Digimon.ID == nil {
 			break
@@ -284,6 +291,8 @@ func (ec *executionContext) childFields_Digimon(ctx context.Context, field graph
 		return ec.fieldContext_Digimon_name(ctx, field)
 	case "level":
 		return ec.fieldContext_Digimon_level(ctx, field)
+	case "digimonType":
+		return ec.fieldContext_Digimon_digimonType(ctx, field)
 	case "attribute":
 		return ec.fieldContext_Digimon_attribute(ctx, field)
 	case "moves":
@@ -590,6 +599,29 @@ func (ec *executionContext) _Digimon_level(ctx context.Context, field graphql.Co
 	)
 }
 func (ec *executionContext) fieldContext_Digimon_level(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Digimon", field, false, false, errors.New("field of type String does not have child fields"))
+}
+
+func (ec *executionContext) _Digimon_digimonType(ctx context.Context, field graphql.CollectedField, obj *model.Digimon) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Digimon_digimonType(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.DigimonType, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNString2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Digimon_digimonType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Digimon", field, false, false, errors.New("field of type String does not have child fields"))
 }
 
@@ -2057,7 +2089,7 @@ func (ec *executionContext) unmarshalInputFilter(ctx context.Context, obj any) (
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "level", "attribute", "moves", "isMode", "isXAntibody"}
+	fieldsInOrder := [...]string{"name", "level", "digimonType", "attribute", "moves", "isMode", "isXAntibody"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -2078,6 +2110,13 @@ func (ec *executionContext) unmarshalInputFilter(ctx context.Context, obj any) (
 				return it, err
 			}
 			it.Level = data
+		case "digimonType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("digimonType"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DigimonType = data
 		case "attribute":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attribute"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -2143,6 +2182,11 @@ func (ec *executionContext) _Digimon(ctx context.Context, sel ast.SelectionSet, 
 			}
 		case "level":
 			out.Values[i] = ec._Digimon_level(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "digimonType":
+			out.Values[i] = ec._Digimon_digimonType(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
