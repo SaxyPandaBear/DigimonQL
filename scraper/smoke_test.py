@@ -57,7 +57,9 @@ def validate_filter_query(digimons: list) -> bool:
         # everything in the filtered response should be of type "Food"
         if d["digimonType"] != "Food":
             return False
-        comparison = expected[d["name"]]
+        if d["id"] not in expected:
+            return False
+        comparison = expected[d["id"]]
         for k, v in comparison.items():
             if v != d[k]:
                 return False
