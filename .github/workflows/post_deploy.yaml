@@ -1,0 +1,23 @@
+name: Post-Deployment Smoke Test
+
+on:
+  deployment_status:
+    states: [success]
+
+jobs:
+  post-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # access to check out code and install dependencies
+    if: github.event.deployment_status.state == 'success'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+      - run: pip install -r ./scraper/requirements.py
+      - name: Verify GraphQL API works as expected
+        run: python scraper/smoke_test.py
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}  # the base URL to request against
