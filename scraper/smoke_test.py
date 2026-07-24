@@ -91,7 +91,7 @@ def main():
     }
     """
     # query_str has properly escaped quotes in the input
-    query_str = "query IntegrationTest { digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: { digimonType: \"Food\" }) { name digimonType level } count}"
+    query_str = "{\"query\": \"query IntegrationTest { digimon(id: \\\"burgamon\\\") { digimonType name level attribute } digimons(input: {digimonType: \\\"Food\\\"}) { name digimonType level } count}\"}"
     query = {
         "query": query_str
     }
