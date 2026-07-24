@@ -91,7 +91,7 @@ def main():
     }
     """
     query = {
-      "query": "query IntegrationTest { digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: {digimonType: \"Food\"}) { name digimonType level } count}"
+      "query": "query IntegrationTest { digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: {digimonType: \"Food\"}) { id name digimonType level } count}"
     }
     resp = requests.post(f"{base_url}/query", json=query, headers={"Content-Type": "application/json; charset=utf-8"})
     if resp.status_code != 200:
