@@ -74,8 +74,8 @@ def main():
 
     # create a multi-function query that tests all of the functionality in one request,
     # in order to minimize separate calls for network egress.
-    query_str = """
-    query {
+    """
+    query IntegrationTest {
         digimon(id: "burgamon") {
             digimonType
             name
@@ -90,10 +90,12 @@ def main():
         count
     }
     """
+    # query_str has properly escaped quotes in the input
+    query_str = "query IntegrationTest { digimon(id: \"burgamon\") { digimonType name level attribute } digimons(input: { digimonType: \"Food\" }) { name digimonType level } count}"
     query = {
         "query": query_str
     }
-    resp = requests.post(f"{base_url}/query", query, headers={"Content-Type": "application/json; charset=utf-8"})
+    resp = requests.post(f"{base_url}/query", data=query, headers={"Content-Type": "application/json; charset=utf-8"})
     if resp.status_code != 200:
         print(f"Expected status code 200, but got {resp.status_code}")
         print(resp.json())
