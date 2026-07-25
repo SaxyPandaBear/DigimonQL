@@ -12,7 +12,9 @@ known_mode_variants = [
     "aegiochusmon:blue",
     "aegiochusmon:dark",
     "aegiochusmon:green",
-    "aegiochusmon_holly"
+    "aegiochusmon_holly",
+    "agnimon",
+    "vritramon"
 ]
 
 # map digimon to their modes
@@ -67,4 +69,6 @@ digimon_modes = {
     "duftmonleopardmode": ["duftmon"],
     "dukemon": ["dukemoncrimsonmode"],
     "sakuyamon": ["sakuyamon:mikomode"],
+    "agnimon": ["vritramon"],
+    "vritramon": ["agnimon"],
 }

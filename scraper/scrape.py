@@ -5,7 +5,7 @@ from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
-from evolutions import next_evolutions, previous_evolutions
+from evolutions import next_evolutions
 from modes import digimon_modes, known_mode_variants
 from names import digimon_names
 
@@ -62,6 +62,28 @@ def are_names_in_dict_valid(d: dict[str, list[str]]) -> bool:
     return not error_found
 
 
+# logically, we can iterate over the unidirectional digivolutions and
+# derive the link going backwards as its own separate set. this is to cut
+# down on how much time it takes to handwrite the mappings.
+def derive_previous_digivolutions() -> dict[str, list[str]]:
+    temp = {}
+
+    for k, v in next_evolutions.items():
+        for digimon in v:
+            if digimon not in temp:
+                # place a new entry
+                temp[digimon] = {k}
+            else:
+                # already exists, add k to the set
+                temp[digimon].add(k)
+
+    # coerece back to a list
+    result = {}
+    for k, v in temp.items():
+        result[k] = list(v)
+    return result
+
+
 def validate_references():
     # there should not be duplicate names.
     # if there are duplicates, that has to be addressed before continuing
@@ -84,6 +106,7 @@ def validate_references():
         sys.exit(1)
 
     # for every evolution chain, each name should be the directory name/ID, not the localized name
+    previous_evolutions = derive_previous_digivolutions()
     print("Checking next evolutions...")
     if not are_names_in_dict_valid(next_evolutions):
         print("At least one next evolution chain is invalid.")
@@ -92,6 +115,24 @@ def validate_references():
     if not are_names_in_dict_valid(previous_evolutions):
         print("At least one previous evolution chain is invalid.")
         sys.exit(1)
+
+    # TODO: toggle as we go. check each name that exists in the digivolution maps,
+    #       and compute the set difference between that and the total set of names
+    #       in order to determine how many digimon still need to be mapped
+    universe = set(digimon_names)
+    mapped = []
+    mapped.extend(previous_evolutions.keys())
+    for v in previous_evolutions.values():
+        mapped.extend(v)
+    mapped.extend(next_evolutions.keys())
+    for v in next_evolutions.values():
+        mapped.extend(v)
+    mapped = set(mapped)
+
+    # compute the set difference. note that if we got this far, there should not
+    # be any value in `mapped` that doesn't exist in universe.
+    unmapped = universe.difference(mapped)
+    print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
 
     # TODO: permament skip for scraping while iterating
     print("Successfully validated references. Exiting before scraping...")
