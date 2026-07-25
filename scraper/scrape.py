@@ -49,8 +49,21 @@ def clean_attribute(s: str) -> str:
     return s
 
 
-def main():
-    # there should not be duplicates.
+def are_names_in_dict_valid(d: dict[str, list[str]]) -> bool:
+    error_found = False
+    for k, v in d.items():
+        if k not in digimon_names:
+            print(f"ERROR: {k} is not a valid Digimon.")
+            error_found = True
+        for v1 in v:
+            if v1 not in digimon_names:
+                print(f"ERROR: {v1} is not a valid Digimon.")
+                error_found = True
+    return not error_found
+
+
+def validate_references():
+    # there should not be duplicate names.
     # if there are duplicates, that has to be addressed before continuing
     # to scrape the data.
     name_set = set(digimon_names)
@@ -59,6 +72,34 @@ def main():
         print(f"Found {diff} duplicates in the data. Cannot proceed.")
         print([x for x in digimon_names if digimon_names.count(x) > 1])
         sys.exit(1)
+
+    # for every mode, that name should be the directory name/ID, not the localized name
+    print("Checking modes...")
+    for known in known_mode_variants:
+        if known not in digimon_names:
+            print(f"ERROR: {known} is not a valid Digimon.")
+            sys.exit(1)
+    if not are_names_in_dict_valid(digimon_modes):
+        print("At least one Digimon mode is invalid.")
+        sys.exit(1)
+
+    # for every evolution chain, each name should be the directory name/ID, not the localized name
+    print("Checking next evolutions...")
+    if not are_names_in_dict_valid(next_evolutions):
+        print("At least one next evolution chain is invalid.")
+        sys.exit(1)
+    print("Checking previous evolutions...")
+    if not are_names_in_dict_valid(previous_evolutions):
+        print("At least one previous evolution chain is invalid.")
+        sys.exit(1)
+
+    # TODO: permament skip for scraping while iterating
+    print("Successfully validated references. Exiting before scraping...")
+    sys.exit(0)
+
+
+def main():
+    validate_references()  # ensure the bootstrapping data is all valid before beginning to scrape
 
     data = []
     failures = []
