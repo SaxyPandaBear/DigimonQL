@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	databaseName   = "test" // TODO: migrate this. this was the default name created on an empty instance
+	databaseName   = "public" // TODO: is there a good way to maintain this?
 	collectionName = "digimon"
 )
 

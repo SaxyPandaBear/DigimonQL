@@ -76,7 +76,7 @@ is incomplete.
 
 Load the data to your desired MongoDB instance:
 ```bash
-mongoimport --jsonArray --authenticationDatabase=admin --drop mongodb://something ./data/digimon.json
+mongoimport --jsonArray --authenticationDatabase=admin -d public -c digimon --drop mongodb://something ./data/digimon.json
 ```
 This example includes the `--drop` flag in order to completely refresh the collection. Not sure if there's
 a clean way to do full upserts of the database.
