@@ -14,10 +14,16 @@ known_mode_variants = [
     "aegiochusmon:green",
     "aegiochusmon_holly",
     "agnimon",
-    "vritramon"
+    "vritramon",
+    "terriermon_assistant",
+    "wolfmon",
+    "garummon",
+    "ranamon",
+    "calamaramon",
 ]
 
-# map digimon to their modes
+# map digimon to their modes. note that these are not always
+# semantically bidirectional.
 digimon_modes = {
     "apollomon": ["apollomon_whispered"],
     "armamon": ["armamon_burstmode"],
@@ -71,4 +77,10 @@ digimon_modes = {
     "sakuyamon": ["sakuyamon:mikomode"],
     "agnimon": ["vritramon"],
     "vritramon": ["agnimon"],
+    "terriermon": ["terriermon_assistant"],
+    "terriermon_assistant": ["terriermon"],
+    "wolfmon": ["garummon"],
+    "garummon": ["wolfmon"],
+    "ranamon": ["calamaramon"],
+    "calamaramon": ["ranamon"]
 }

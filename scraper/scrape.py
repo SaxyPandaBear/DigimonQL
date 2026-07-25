@@ -141,7 +141,8 @@ def validate_references():
 
 def main():
     validate_references()  # ensure the bootstrapping data is all valid before beginning to scrape
-
+    # TODO: clean up later
+    previous_evolutions = derive_previous_digivolutions()
     data = []
     failures = []
     for name in digimon_names:
