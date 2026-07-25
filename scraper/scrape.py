@@ -196,14 +196,6 @@ def main():
         if name in next_evolutions:
             result["next_digivolutions"] = next_evolutions[name]
 
-        # If this Digimon has modes, check each mode for previous evolution mappings
-        if "modes" in result:
-            for digimon_mode in result["modes"]:
-                if digimon_mode in previous_evolutions:
-                    result["previous_digivolutions"] = list(set(result["previous_digivolutions"].extend(previous_evolutions[digimon_mode])))  # pyright:ignore
-                if digimon_mode in next_evolutions:
-                    result["next_digivolutions"] = list(set(result["next_digivolutions"].extend(next_evolutions[digimon_mode])))  # pyright:ignore
-
         data.append(result)
 
         sleep(0.05)  # wait for rate-limiting
