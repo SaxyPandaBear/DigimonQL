@@ -42,6 +42,17 @@ go test ./... -v
 
 ### Scraping the data
 
+#### Digimon Info
+* [Digimon Reference Book](https://digimon.net/reference_en/)
+
+#### Evolution Info
+* [Digimon Story: Time Stranger](https://www.grindosaur.com/en/games/digimon-story-time-stranger/digimon)
+    * Needs a second pass-through
+* [Digimon World: Next Order](https://www.grindosaur.com/en/games/digimon-world-next-order/digimon)
+    * Complete through Keramon
+* [Digimon Story: Cyber Sleuth](https://www.grindosaur.com/en/games/digimon-story-cyber-sleuth/digimon)
+    * Not started
+
 IMPORTANT NOTE: Just running the scraper does not provide the full set of data right now, 
 as things need to be added manually such as the mappings for evolutions and mode changes.
 

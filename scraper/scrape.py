@@ -127,6 +127,9 @@ def validate_references():
     mapped.extend(next_evolutions.keys())
     for v in next_evolutions.values():
         mapped.extend(v)
+    mapped.extend(digimon_modes.keys())
+    for v in digimon_modes.values():
+        mapped.extend(v)
     mapped = set(mapped)
 
     # compute the set difference. note that if we got this far, there should not
@@ -134,9 +137,11 @@ def validate_references():
     unmapped = universe.difference(mapped)
     print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
 
-    # TODO: permament skip for scraping while iterating
-    print("Successfully validated references. Exiting before scraping...")
-    sys.exit(0)
+    # if len(unmapped) > 0:
+    #     unmapped = sorted(unmapped)
+    #     for n in unmapped:
+    #         print(f"\t{n}")
+    #     sys.exit(1)
 
 
 def main():
