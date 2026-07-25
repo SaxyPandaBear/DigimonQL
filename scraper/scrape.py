@@ -1,11 +1,13 @@
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
-from bs4 import BeautifulSoup
-from time import sleep
-from names import digimon_names
-from modes import known_mode_variants
-
 import json
+import sys
+from time import sleep
+
 import requests
+from bs4 import BeautifulSoup
+from evolutions import next_evolutions, previous_evolutions
+from modes import digimon_modes, known_mode_variants
+from names import digimon_names
 
 output_path = "../data/digimon.json"
 url_template = "https://digimon.net/reference_en/detail.php?directory_name="  # url param is the CASE SENSITIVE name of the digimon
@@ -16,6 +18,7 @@ parent_tag = "p-ref"  # encompassing class tag
 en_name_tag = "c-titleSet__main"  # localized English name
 info_tag = "p-ref__info"  # section that has details like level, type, attribute, and special move(s)
 profile_tag = "p-ref__txt"  # description of the Digimon
+
 
 # input is in the form <img src="../cimages/digimon/bearcatmon.jpg" alt="">
 # so take that and replace the beginning with the domain.
@@ -33,7 +36,7 @@ def parse_special_moves(s: str) -> list:
 # The In-Training levels use the roman numerals I and II, in Unicode,
 # but these aren't intuitively queryable compared to the numeric 1 and 2.
 def clean_level(s: str) -> str:
-    return s.replace("\u2160", "1").replace(u"\u2161", "2").replace("(Xros Wars)", "")
+    return s.replace("\u2160", "1").replace("\u2161", "2").replace("(Xros Wars)", "")
 
 
 def clean_name(s: str) -> str:
@@ -45,6 +48,7 @@ def clean_attribute(s: str) -> str:
         return "None"
     return s
 
+
 def main():
     # there should not be duplicates.
     # if there are duplicates, that has to be addressed before continuing
@@ -54,7 +58,7 @@ def main():
     if diff != 0:
         print(f"Found {diff} duplicates in the data. Cannot proceed.")
         print([x for x in digimon_names if digimon_names.count(x) > 1])
-        exit(1)
+        sys.exit(1)
 
     data = []
     failures = []
@@ -87,8 +91,9 @@ def main():
         digimon_attr = clean_attribute(values[2])
         digimon_moves = parse_special_moves(values[3])
 
-        result = dict()
-        result["_id"] = name  # identifier is the name used in the URL for the digimon - uses underscore prefix for MongoDB semantics
+        result = {}
+        # identifier is the name used in the URL for the digimon - uses underscore prefix for MongoDB semantics
+        result["_id"] = name
         result["name"] = english_name  # TODO: how should this handle localized names?
         result["level"] = digimon_level
         result["type"] = digimon_type
@@ -96,15 +101,29 @@ def main():
         result["moves"] = digimon_moves
         result["img_src"] = img_url
         result["background"] = digimon.find(class_=profile_tag).text.strip()
-        result["previous_digivolutions"] = []  # not derivable from Reference Book, expected values are id values of other digimon
-        result["next_digivolutions"] = []
         result["is_mode"] = name in known_mode_variants or " Mode" in english_name
-        result["modes"] = []  # keep track of the modes that a Digimon can change to from here
         result["is_x_antibody"] = "(X Antibody)" in english_name
+
+        if name in digimon_modes:
+            result["modes"] = digimon_modes[name]
+
+        # don't assume that the digimon exists in the map
+        if name in previous_evolutions:
+            result["previous_digivolutions"] = previous_evolutions[name]
+        if name in next_evolutions:
+            result["next_digivolutions"] = next_evolutions[name]
+
+        # If this Digimon has modes, check each mode for previous evolution mappings
+        if "modes" in result:
+            for digimon_mode in result["modes"]:
+                if digimon_mode in previous_evolutions:
+                    result["previous_digivolutions"] = list(set(result["previous_digivolutions"].extend(previous_evolutions[digimon_mode])))  # pyright:ignore
+                if digimon_mode in next_evolutions:
+                    result["next_digivolutions"] = list(set(result["next_digivolutions"].extend(next_evolutions[digimon_mode])))  # pyright:ignore
 
         data.append(result)
 
-        sleep(0.25)  # wait for rate-limiting
+        sleep(0.05)  # wait for rate-limiting
 
     # after iterating over all of the digimon, check the failures (if any).
     # if there are failures, flag it to be addressed and exit early
@@ -112,13 +131,12 @@ def main():
         print(f"Had an issue finding {len(failures)} digimon. Triage these:")
         for name in failures:
             print(f"\t{name}")
-        exit(1)
+        sys.exit(1)
 
     # if there are no failures, write the data out as JSON to be used as the backing data for the database
     with open(output_path, "w") as f:
         json.dump(data, f)  # pyright:ignore
         print(f"Successfully wrote out {len(data)} digimon scraped to {output_path}")
-
 
 
 if __name__ == "__main__":
