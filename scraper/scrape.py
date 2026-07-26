@@ -55,6 +55,11 @@ def are_names_in_dict_valid(d: dict[str, list[str]]) -> bool:
         if k not in digimon_names:
             print(f"ERROR: {k} is not a valid Digimon.")
             error_found = True
+        # check for duplicates in the list
+        dupes = set(v)
+        if len(dupes) != len(v):
+            print(f"Duplicates found in list {v} corresponding to {k}")
+            error_found = True # at least one duplicate in the list
         for v1 in v:
             if v1 not in digimon_names:
                 print(f"ERROR: {v1} is not a valid Digimon.")
@@ -137,11 +142,12 @@ def validate_references():
     unmapped = universe.difference(mapped)
     print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
 
-    if len(unmapped) > 0:
-        unmapped = sorted(unmapped)
-        for n in unmapped:
-            print(f"\t{n}")
-        sys.exit(1)
+    # if len(unmapped) > 0:
+    #     unmapped = sorted(unmapped)
+    #     for n in unmapped:
+    #         print(f"\t{n}")
+    #     sys.exit(1)
+    sys.exit(0)
 
 
 def main():

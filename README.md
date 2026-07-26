@@ -56,7 +56,7 @@ them.
 * [Digimon World: Next Order](https://www.grindosaur.com/en/games/digimon-world-next-order/digimon)
     * Completed
 * [Digimon Story: Cyber Sleuth](https://www.grindosaur.com/en/games/digimon-story-cyber-sleuth/digimon)
-    * Completed through Gabumon
+    * Completed through Togemon
 * [Wikimon](https://wikimon.net/) to fill the gaps
     * Not started 
 
