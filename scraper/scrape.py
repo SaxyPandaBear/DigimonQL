@@ -137,11 +137,11 @@ def validate_references():
     unmapped = universe.difference(mapped)
     print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
 
-    # if len(unmapped) > 0:
-    #     unmapped = sorted(unmapped)
-    #     for n in unmapped:
-    #         print(f"\t{n}")
-    #     sys.exit(1)
+    if len(unmapped) > 0:
+        unmapped = sorted(unmapped)
+        for n in unmapped:
+            print(f"\t{n}")
+        sys.exit(1)
 
 
 def main():

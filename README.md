@@ -46,12 +46,19 @@ go test ./... -v
 * [Digimon Reference Book](https://digimon.net/reference_en/)
 
 #### Evolution Info
+The evolution information that is written in `./scraper/evolutions.py` is painstakingly handwritten by me. 
+No AI could do this work. I have to map digivolutions across canons, dropping the ones that aren't present
+in the Encyclopedia, and also translating some from their English localized names in order to properly reference
+them.
+
 * [Digimon Story: Time Stranger](https://www.grindosaur.com/en/games/digimon-story-time-stranger/digimon)
     * Needs a second pass-through
 * [Digimon World: Next Order](https://www.grindosaur.com/en/games/digimon-world-next-order/digimon)
-    * Complete through Keramon
+    * Completed
 * [Digimon Story: Cyber Sleuth](https://www.grindosaur.com/en/games/digimon-story-cyber-sleuth/digimon)
-    * Not started
+    * Completed through Gabumon
+* [Wikimon](https://wikimon.net/) to fill the gaps
+    * Not started 
 
 IMPORTANT NOTE: Just running the scraper does not provide the full set of data right now, 
 as things need to be added manually such as the mappings for evolutions and mode changes.

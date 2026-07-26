@@ -1,0 +1,25 @@
+name: API Data Issue
+description: File a report if you think there is information that is either incorrect or missing from the API.
+title: "[Bug]: [Describe the issue]"
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for submitting a report. I'll try to get to it ASAP.
+  - type: textarea
+    id: digimon
+    attributes:
+      label: Digimon impacted
+      description: Which Digimon(s) have an issue?
+      placeholder: Agumon
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: Data Issue
+      description: Tell us what happened in detail
+      placeholder: Agumon is missing an evolution
+    validations:
+      required: true
