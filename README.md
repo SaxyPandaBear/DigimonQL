@@ -50,13 +50,15 @@ The evolution information that is written in `./scraper/evolutions.py` is painst
 No AI could do this work. I have to map digivolutions across canons, dropping the ones that aren't present
 in the Encyclopedia, and also translating some from their English localized names in order to properly reference
 them.
+For this, I am excluding (to my best ability) pendulum evolutions and most warp evolutions.
+I am also ignoring X Antibody characters for the time being.
 
 * [Digimon Story: Time Stranger](https://www.grindosaur.com/en/games/digimon-story-time-stranger/digimon)
-    * Needs a second pass-through
+    * Completed ✅
 * [Digimon World: Next Order](https://www.grindosaur.com/en/games/digimon-world-next-order/digimon)
-    * Completed
+    * Completed ✅
 * [Digimon Story: Cyber Sleuth](https://www.grindosaur.com/en/games/digimon-story-cyber-sleuth/digimon)
-    * Completed through Togemon
+    * Completed ✅
 * [Wikimon](https://wikimon.net/) to fill the gaps
     * Not started 
 

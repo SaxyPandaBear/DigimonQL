@@ -2,6 +2,7 @@
 import json
 import sys
 from time import sleep
+import itertools
 
 import requests
 from bs4 import BeautifulSoup
@@ -142,11 +143,12 @@ def validate_references():
     unmapped = universe.difference(mapped)
     print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
 
-    # if len(unmapped) > 0:
-    #     unmapped = sorted(unmapped)
-    #     for n in unmapped:
-    #         print(f"\t{n}")
-    #     sys.exit(1)
+    if len(unmapped) > 0:
+        skip_mappings = []
+        unmapped = sorted([name for name in unmapped if not name.endswith("_x") and not name.startswith("ancient") and name not in skip_mappings])
+        for batch in itertools.batched(unmapped, 8):
+            print(list(batch))
+    print("Exiting early to avoid compute...")
     sys.exit(0)
 
 

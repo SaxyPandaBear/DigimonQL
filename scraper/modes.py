@@ -36,7 +36,9 @@ known_mode_variants = [
     "gigasmon",
     "grottemon",
     "mercuremon",
-    "sephirothmon"
+    "sephirothmon",
+    "omegamon_alter-b",
+    "omegamon-alter-s"
 ]
 
 # map digimon to their modes. note that these are not always
@@ -61,6 +63,9 @@ digimon_modes = {
     "sistermonblanc": ["sistermon_blanc_Awake"],
     "blacktailmon": ["blacktailmon_uver"],
     "omegamon_zwart": ["omegamonzwart_d", "omegamon"],
+    "omegamonzwart_d": ["omegamon_alter-b"],
+    "omegamon_alter-b": ["omegamonzwart_d", "omegamon-alter-s"],
+    "omegamon-alter-s": ["omegamon_alter-b"],
     "omegamon": ["omegamon_zwart"],
     "shoutmonx7": ["shoutmonx7_superior"],
     "weregarrumon": ["waregarurumon_sagittarius"],
