@@ -53,6 +53,11 @@ them.
 For this, I am excluding (to my best ability) pendulum evolutions and most warp evolutions.
 I am also ignoring X Antibody characters for the time being.
 
+Wikimon as a source includes every possible evolution, so it is feasible to scrape
+that site to generate the evolution mappings. That being said, some of them are
+technically correct but I just personally disagree. For example, for the protagonist
+partners in Digimon Beatbreak, they list the Ultimate forms as warp evolutions: https://wikimon.net/Scourge_Chiropmon
+
 * [Digimon Story: Time Stranger](https://www.grindosaur.com/en/games/digimon-story-time-stranger/digimon)
     * Completed ✅
 * [Digimon World: Next Order](https://www.grindosaur.com/en/games/digimon-world-next-order/digimon)
