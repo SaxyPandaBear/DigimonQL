@@ -145,7 +145,7 @@ def validate_references():
 
     if len(unmapped) > 0:
         skip_mappings = []
-        unmapped = sorted([name for name in unmapped if not name.endswith("_x") and not name.startswith("ancient") and name not in skip_mappings])
+        unmapped = sorted([name for name in unmapped if not name.endswith("_x") and not name.endswith("-x") and not name.endswith("-xwars") and not name.startswith("shoutmon") and name not in skip_mappings])
         for batch in itertools.batched(unmapped, 8):
             print(list(batch))
     print("Exiting early to avoid compute...")
