@@ -65,7 +65,6 @@ partners in Digimon Beatbreak, they list the Ultimate forms as warp evolutions: 
 * [Digimon Story: Cyber Sleuth](https://www.grindosaur.com/en/games/digimon-story-cyber-sleuth/digimon)
     * Completed ✅
 * [Wikimon](https://wikimon.net/) to fill the gaps
-    * Not started 
 
 IMPORTANT NOTE: Just running the scraper does not provide the full set of data right now, 
 as things need to be added manually such as the mappings for evolutions and mode changes.

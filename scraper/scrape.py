@@ -1,8 +1,8 @@
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+import itertools
 import json
 import sys
 from time import sleep
-import itertools
 
 import requests
 from bs4 import BeautifulSoup
@@ -19,6 +19,9 @@ parent_tag = "p-ref"  # encompassing class tag
 en_name_tag = "c-titleSet__main"  # localized English name
 info_tag = "p-ref__info"  # section that has details like level, type, attribute, and special move(s)
 profile_tag = "p-ref__txt"  # description of the Digimon
+
+# There is a set of digimon that don't have any evolution mappings to them (not even TCG), for whatever reason.
+skipped = ["vademon2", "burpmon", "trailmon", "yggdrasill7d6", "yoxtuyoxtumon"]
 
 
 # input is in the form <img src="../cimages/digimon/bearcatmon.jpg" alt="">
@@ -60,12 +63,20 @@ def are_names_in_dict_valid(d: dict[str, list[str]]) -> bool:
         dupes = set(v)
         if len(dupes) != len(v):
             print(f"Duplicates found in list {v} corresponding to {k}")
-            error_found = True # at least one duplicate in the list
+            error_found = True  # at least one duplicate in the list
         for v1 in v:
             if v1 not in digimon_names:
                 print(f"ERROR: {v1} is not a valid Digimon.")
                 error_found = True
     return not error_found
+
+
+def should_skip_mapping(name: str) -> bool:
+    return (
+        name.endswith(("_x", "-x", "-xwars"))
+        or name.startswith("shoutmon")
+        or name in skipped
+    )
 
 
 # logically, we can iterate over the unidirectional digivolutions and
@@ -141,14 +152,18 @@ def validate_references():
     # compute the set difference. note that if we got this far, there should not
     # be any value in `mapped` that doesn't exist in universe.
     unmapped = universe.difference(mapped)
-    unmapped = sorted([name for name in unmapped if not name.endswith("_x") and not name.endswith("-x") and not name.endswith("-xwars") and not name.startswith("shoutmon") and name != "vademon2"])
-    print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
+    print(
+        f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet."
+    )
+    unmapped = sorted([name for name in unmapped if not should_skip_mapping(name)])
+    print(f"There are {len(unmapped)} Digimon that SHOULD have mappings.")
 
     if len(unmapped) > 0:
+        print("UNMATCHED DIGIMON MUST BE ADDRESSED.")
         for batch in itertools.batched(unmapped, 8):
-            print(list(batch))
-    print("Exiting early to avoid compute...")
-    sys.exit(0)
+            print("\t", list(batch))
+            print("Exiting early to avoid compute...")
+            sys.exit(0)
 
 
 def main():
@@ -222,7 +237,7 @@ def main():
 
     # if there are no failures, write the data out as JSON to be used as the backing data for the database
     with open(output_path, "w") as f:
-        json.dump(data, f)  # pyright:ignore
+        json.dump(data, f, indent=2, sort_keys=True)  # pyright:ignore
         print(f"Successfully wrote out {len(data)} digimon scraped to {output_path}")
 
 
