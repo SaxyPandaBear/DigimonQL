@@ -38,7 +38,9 @@ known_mode_variants = [
     "mercuremon",
     "sephirothmon",
     "omegamon_alter-b",
-    "omegamon-alter-s"
+    "omegamon-alter-s",
+    "metalgreymon_cyberlauncher",
+    "ginkakumon_promote"
 ]
 
 # map digimon to their modes. note that these are not always
@@ -70,6 +72,7 @@ digimon_modes = {
     "shoutmonx7": ["shoutmonx7_superior"],
     "weregarrumon": ["waregarurumon_sagittarius"],
     "metalgreymon-v": ["metalgreymon_alter"],
+    "metalgreymon": ["metalgreymon_alter", "metalgreymon_cyberlauncher"],
     "eyesmon": ["eyesmon_scatter"],
     "arresterdramon": ["arresterdramon_superior"],
     "jesmon": ["jesmongx"],
@@ -124,4 +127,9 @@ digimon_modes = {
     "gigasmon": ["grottemon"],
     "mercuremon": ["sephirothmon"],
     "sephirothmon": ["mercuremon"],
+    "junomon": ["junomon_hysteric"],
+    "erlangmon": ["erlangmon_blast"],
+    "gaioumon": ["gaioumon_itto"],
+    "ginkakumon": ["ginkakumon_promote"],
+    "kinkakumon": ["ginkakumon_promote"]
 }

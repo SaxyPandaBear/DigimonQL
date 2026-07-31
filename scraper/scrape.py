@@ -141,11 +141,10 @@ def validate_references():
     # compute the set difference. note that if we got this far, there should not
     # be any value in `mapped` that doesn't exist in universe.
     unmapped = universe.difference(mapped)
+    unmapped = sorted([name for name in unmapped if not name.endswith("_x") and not name.endswith("-x") and not name.endswith("-xwars") and not name.startswith("shoutmon") and name != "vademon2"])
     print(f"There are {len(unmapped)} Digimon out of {len(digimon_names)} that don't have evolution mappings yet.")
 
     if len(unmapped) > 0:
-        skip_mappings = []
-        unmapped = sorted([name for name in unmapped if not name.endswith("_x") and not name.endswith("-x") and not name.endswith("-xwars") and not name.startswith("shoutmon") and name not in skip_mappings])
         for batch in itertools.batched(unmapped, 8):
             print(list(batch))
     print("Exiting early to avoid compute...")
