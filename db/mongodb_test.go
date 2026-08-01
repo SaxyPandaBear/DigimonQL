@@ -31,7 +31,7 @@ func TestTranslateBoolExpToBSON(t *testing.T) {
 	assert.False(t, retrievedBool)
 }
 
-func TestTranslateStringExpToBSON_MultipleIn(t *testing.T) {
+func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 	like := "Pepper Breath"
 	input := &model.StringComparisonExpression{
 		Like: &like,
@@ -77,4 +77,54 @@ func TestTranslateStringExpToBSON_MultipleIn(t *testing.T) {
 	assert.Len(t, allArr, 2)
 	assert.Equal(t, "Supreme Cannon", allArr[0])
 	assert.Equal(t, "Transcendent Sword", allArr[1])
+}
+
+func TestTranslateStringExpToBSON_OneInArray(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateArrayExpToBSON_OneInArray(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateArrayExpToBSON_MultipleInArray(t *testing.T) {
+	panic("not implemented")
+}
+
+// Just do some permutations of the outer structure to validate
+// that things are translated appropriately
+func TestTranslateSearchToBSON(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_AND(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_OR(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_NOT(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_AND_NOT(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_OR_AND(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_NOT_AND_OR(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_AND_AND(t *testing.T) {
+	panic("not implemented")
+}
+
+func TestTranslateSearchToBSON_OR_OR_OR(t *testing.T) {
+	panic("not implemented")
 }
