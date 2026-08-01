@@ -2,5 +2,49 @@
 
 package model
 
+// All expressions are combined with a logical AND.
+type ArrayComparisonExpression struct {
+	// Does the attribute contain all of the elements?
+	Contains []string `json:"_contains,omitempty"`
+}
+
+// All expressions are combined with a logical AND.
+type BooleanComparisonExpression struct {
+	// Does the attribute exactly match the boolean value?
+	Eq *bool `json:"_eq,omitempty"`
+}
+
+// Chainable expression for filtering down a search query.
+//
+// All expressions are combined with a logical AND.
+type DigimonSearchExpression struct {
+	And                   []*DigimonSearchExpression   `json:"_and,omitempty"`
+	Or                    []*DigimonSearchExpression   `json:"_or,omitempty"`
+	Not                   []*DigimonSearchExpression   `json:"_not,omitempty"`
+	Name                  *StringComparisonExpression  `json:"name,omitempty"`
+	Level                 *StringComparisonExpression  `json:"level,omitempty"`
+	DigimonType           *StringComparisonExpression  `json:"digimonType,omitempty"`
+	Attribute             *StringComparisonExpression  `json:"attribute,omitempty"`
+	Moves                 *ArrayComparisonExpression   `json:"moves,omitempty"`
+	Background            *StringComparisonExpression  `json:"background,omitempty"`
+	PreviousDigivolutions *ArrayComparisonExpression   `json:"previousDigivolutions,omitempty"`
+	NextDigivolutions     *ArrayComparisonExpression   `json:"nextDigivolutions,omitempty"`
+	IsMode                *BooleanComparisonExpression `json:"isMode,omitempty"`
+	Modes                 *ArrayComparisonExpression   `json:"modes,omitempty"`
+	IsXAntibody           *BooleanComparisonExpression `json:"isXAntibody,omitempty"`
+}
+
 type Query struct {
+}
+
+type Search struct {
+	Where *DigimonSearchExpression `json:"_where,omitempty"`
+}
+
+// All expressions are combined with a logical AND.
+type StringComparisonExpression struct {
+	// Does the attribute contain the case-insensitive string value?
+	Like *string `json:"_like,omitempty"`
+	// Does the attribute exactly match a string value in the list?
+	In []string `json:"_in,omitempty"`
 }

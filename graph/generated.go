@@ -56,6 +56,7 @@ type ComplexityRoot struct {
 		Count    func(childComplexity int) int
 		Digimon  func(childComplexity int, id string) int
 		Digimons func(childComplexity int, input *model.Filter) int
+		Search   func(childComplexity int, input *model.Search) int
 	}
 }
 
@@ -67,6 +68,7 @@ type QueryResolver interface {
 	Digimon(ctx context.Context, id string) (*model.Digimon, error)
 	Digimons(ctx context.Context, input *model.Filter) ([]*model.Digimon, error)
 	Count(ctx context.Context) (*int32, error)
+	Search(ctx context.Context, input *model.Search) ([]*model.Digimon, error)
 }
 
 // endregion ************************** generated!.gotpl **************************
@@ -195,6 +197,18 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Query.Digimons(childComplexity, args["input"].(*model.Filter)), true
 
+	case "Query.search":
+		if e.ComplexityRoot.Query.Search == nil {
+			break
+		}
+
+		args, err := ec.field_Query_search_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.Search(childComplexity, args["input"].(*model.Search)), true
+
 	}
 	return 0, false
 }
@@ -203,7 +217,12 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := newExecutionContext(opCtx, e, make(chan graphql.DeferredResult))
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputArrayComparisonExpression,
+		ec.unmarshalInputBooleanComparisonExpression,
+		ec.unmarshalInputDigimonSearchExpression,
 		ec.unmarshalInputFilter,
+		ec.unmarshalInputSearch,
+		ec.unmarshalInputStringComparisonExpression,
 	)
 	first := true
 
@@ -465,6 +484,20 @@ func (ec *executionContext) field_Query_digimons_args(ctx context.Context, rawAr
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
 		func(ctx context.Context, v any) (*model.Filter, error) {
 			return ec.unmarshalOFilter2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐFilter(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "input",
+		func(ctx context.Context, v any) (*model.Search, error) {
+			return ec.unmarshalOSearch2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐSearch(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -890,7 +923,7 @@ func (ec *executionContext) _Query_digimons(ctx context.Context, field graphql.C
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Digimon) graphql.Marshaler {
-			return ec.marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, selections, v)
+			return ec.marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonᚄ(ctx, selections, v)
 		},
 		true,
 		true,
@@ -941,6 +974,50 @@ func (ec *executionContext) _Query_count(ctx context.Context, field graphql.Coll
 }
 func (ec *executionContext) fieldContext_Query_count(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("Query", field, true, true, errors.New("field of type Int does not have child fields"))
+}
+
+func (ec *executionContext) _Query_search(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_search(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Search(ctx, fc.Args["input"].(*model.Search))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Digimon) graphql.Marshaler {
+			return ec.marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_search(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Digimon(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_search_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2078,6 +2155,187 @@ func (ec *executionContext) fieldContext___Type_isOneOf(_ context.Context, field
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputArrayComparisonExpression(ctx context.Context, obj any) (model.ArrayComparisonExpression, error) {
+	var it model.ArrayComparisonExpression
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"_contains"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "_contains":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_contains"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Contains = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputBooleanComparisonExpression(ctx context.Context, obj any) (model.BooleanComparisonExpression, error) {
+	var it model.BooleanComparisonExpression
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"_eq"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "_eq":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_eq"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Eq = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputDigimonSearchExpression(ctx context.Context, obj any) (model.DigimonSearchExpression, error) {
+	var it model.DigimonSearchExpression
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"_and", "_or", "_not", "name", "level", "digimonType", "attribute", "moves", "background", "previousDigivolutions", "nextDigivolutions", "isMode", "modes", "isXAntibody"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "_and":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_and"))
+			data, err := ec.unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.And = data
+		case "_or":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_or"))
+			data, err := ec.unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Or = data
+		case "_not":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_not"))
+			data, err := ec.unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Not = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "level":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("level"))
+			data, err := ec.unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Level = data
+		case "digimonType":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("digimonType"))
+			data, err := ec.unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DigimonType = data
+		case "attribute":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("attribute"))
+			data, err := ec.unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Attribute = data
+		case "moves":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("moves"))
+			data, err := ec.unmarshalOArrayComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐArrayComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Moves = data
+		case "background":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("background"))
+			data, err := ec.unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Background = data
+		case "previousDigivolutions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("previousDigivolutions"))
+			data, err := ec.unmarshalOArrayComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐArrayComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PreviousDigivolutions = data
+		case "nextDigivolutions":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nextDigivolutions"))
+			data, err := ec.unmarshalOArrayComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐArrayComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NextDigivolutions = data
+		case "isMode":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isMode"))
+			data, err := ec.unmarshalOBooleanComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐBooleanComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsMode = data
+		case "modes":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("modes"))
+			data, err := ec.unmarshalOArrayComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐArrayComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Modes = data
+		case "isXAntibody":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isXAntibody"))
+			data, err := ec.unmarshalOBooleanComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐBooleanComparisonExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsXAntibody = data
+		}
+	}
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputFilter(ctx context.Context, obj any) (model.Filter, error) {
 	var it model.Filter
 	if obj == nil {
@@ -2145,6 +2403,73 @@ func (ec *executionContext) unmarshalInputFilter(ctx context.Context, obj any) (
 				return it, err
 			}
 			it.IsXAntibody = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputSearch(ctx context.Context, obj any) (model.Search, error) {
+	var it model.Search
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"_where"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "_where":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_where"))
+			data, err := ec.unmarshalODigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Where = data
+		}
+	}
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputStringComparisonExpression(ctx context.Context, obj any) (model.StringComparisonExpression, error) {
+	var it model.StringComparisonExpression
+	if obj == nil {
+		return it, nil
+	}
+
+	asMap := map[string]any{}
+	for k, v := range obj.(map[string]any) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"_like", "_in"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "_like":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_like"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Like = data
+		case "_in":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_in"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.In = data
 		}
 	}
 	return it, nil
@@ -2331,6 +2656,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}()
 				res = ec._Query_count(ctx, field)
 				if res == graphql.RequiredNull {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "search":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_search(ctx, field)
+				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
 				return res
@@ -2785,14 +3132,35 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx context.Context, sel ast.SelectionSet, v []*model.Digimon) graphql.Marshaler {
+func (ec *executionContext) marshalNDigimon2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Digimon) graphql.Marshaler {
 	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
 		fc := graphql.GetFieldContext(ctx)
 		fc.Result = &v[i]
-		return ec.marshalODigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, sel, v[i])
+		return ec.marshalNDigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx, sel, v[i])
 	})
 
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
 	return ret
+}
+
+func (ec *executionContext) marshalNDigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx context.Context, sel ast.SelectionSet, v *model.Digimon) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			graphql.AddErrorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Digimon(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx context.Context, v any) (*model.DigimonSearchExpression, error) {
+	res, err := ec.unmarshalInputDigimonSearchExpression(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
@@ -2996,6 +3364,14 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalOArrayComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐArrayComparisonExpression(ctx context.Context, v any) (*model.ArrayComparisonExpression, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputArrayComparisonExpression(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v any) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3026,11 +3402,44 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalOBooleanComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐBooleanComparisonExpression(ctx context.Context, v any) (*model.BooleanComparisonExpression, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBooleanComparisonExpression(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalODigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimon(ctx context.Context, sel ast.SelectionSet, v *model.Digimon) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Digimon(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx context.Context, v any) ([]*model.DigimonSearchExpression, error) {
+	if v == nil {
+		return nil, nil
+	}
+	vSlice := graphql.CoerceList(v)
+	var err error
+	res := make([]*model.DigimonSearchExpression, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNDigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalODigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx context.Context, v any) (*model.DigimonSearchExpression, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDigimonSearchExpression(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFilter2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐFilter(ctx context.Context, v any) (*model.Filter, error) {
@@ -3057,6 +3466,14 @@ func (ec *executionContext) marshalOInt2ᚖint32(ctx context.Context, sel ast.Se
 	_ = ctx
 	res := graphql.MarshalInt32(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOSearch2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐSearch(ctx context.Context, v any) (*model.Search, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputSearch(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v any) ([]string, error) {
@@ -3110,6 +3527,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	_ = ctx
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx context.Context, v any) (*model.StringComparisonExpression, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputStringComparisonExpression(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

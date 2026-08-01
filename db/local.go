@@ -76,3 +76,8 @@ func (r *LocalDigimonRepository) Count(_ context.Context) (int, error) {
 func (r *LocalDigimonRepository) Close() error {
 	return nil
 }
+
+func (r *LocalDigimonRepository) Search(_ context.Context, _ *model.Search) ([]*model.Digimon, error) {
+	// TODO: don't really want to implement this locally
+	return r.Digimons, nil
+}

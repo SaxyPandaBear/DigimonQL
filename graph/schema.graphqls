@@ -45,11 +45,65 @@ input Filter {
     isXAntibody: Boolean
 }
 
+"All expressions are combined with a logical AND."
+input StringComparisonExpression {
+    "Does the attribute contain the case-insensitive string value?"
+    _like: String
+    "Does the attribute exactly match a string value in the list?"
+    _in: [String!]
+}
+
+"All expressions are combined with a logical AND."
+input BooleanComparisonExpression {
+    "Does the attribute exactly match the boolean value?"
+    _eq: Boolean
+}
+
+"All expressions are combined with a logical AND."
+input ArrayComparisonExpression {
+    "Does the attribute contain all of the elements?"
+    _contains: [String!]
+}
+
+"""
+Chainable expression for filtering down a search query.
+
+All expressions are combined with a logical AND.
+"""
+input DigimonSearchExpression {
+    _and: [DigimonSearchExpression!]
+    _or: [DigimonSearchExpression!]
+    _not: [DigimonSearchExpression!]
+    name: StringComparisonExpression
+    level: StringComparisonExpression
+    digimonType: StringComparisonExpression
+    attribute: StringComparisonExpression
+    moves: ArrayComparisonExpression
+    background: StringComparisonExpression
+    previousDigivolutions: ArrayComparisonExpression
+    nextDigivolutions: ArrayComparisonExpression
+    isMode: BooleanComparisonExpression
+    modes: ArrayComparisonExpression
+    isXAntibody: BooleanComparisonExpression
+}
+
+input Search {
+    _where: DigimonSearchExpression
+}
+
 type Query {
     "Fetch a single Digimon by passing in the case-sensitive directory name of the Digimon."
     digimon(id: ID!): Digimon
-    "Fetch a list of Digimon, with an optional filter argument. An empty filter will return the full set of Digimon."
-    digimons(input: Filter): [Digimon]!
+    """
+    Fetch a list of Digimon, with an optional filter argument. An empty filter will return the full set of Digimon.
+    Note that the arguments here use an exact match. This is an initial implementation and is likely to be deprecated.
+    """
+    digimons(input: Filter): [Digimon!]!
     "Fetch the total number of registered Digimon."
     count: Int
+    """
+    Fetch a list of Digimon, with an optional search argument. An empty argument will return the full set of Digimon.
+    This supports complex query paramters.
+    """
+    search(input: Search): [Digimon!]!
 }
