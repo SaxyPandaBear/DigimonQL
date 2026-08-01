@@ -8,6 +8,7 @@ convention directly conflicts with a reserved word in GraphQL.
 """
 
 import os
+import sys
 
 import requests
 
@@ -52,7 +53,7 @@ def validate_filter_query(digimons: list) -> bool:
 
 def validate_count_query(num: int) -> bool:
     return (
-        num >= 1308 # TODO: UPDATE THIS AFTER FIXING THE DATABASE
+        num >= 1314 # TODO: UPDATE THIS AFTER FIXING THE DATABASE
     )  # TODO: not sure if there's a good way to update this as new Digimon are added
 
 
@@ -60,7 +61,7 @@ def main():
     base_url = os.getenv("API_BASE_URL")
     if base_url is None:
         print("Failed to get base URL for the API to test against. Failing loudly...")
-        exit(1)
+        sys.exit(1)
 
     # create a multi-function query that tests all of the functionality in one request,
     # in order to minimize separate calls for network egress.
@@ -91,16 +92,16 @@ def main():
     if resp.status_code != 200:
         print(f"Expected status code 200, but got {resp.status_code}")
         print(resp.json())
-        exit(1)
+        sys.exit(1)
     r = resp.json()
     if "errors" in r:
         print("There are errors returned from the API:")
         print(r["errors"])
-        exit(1)
+        sys.exit(1)
     if "data" not in r:
         print("No output data found in response body...")
         print(r)
-        exit(1)
+        sys.exit(1)
 
     single_query = r["data"]["digimon"]
     filter_query = r["data"]["digimons"]
@@ -121,10 +122,11 @@ def main():
         print(count_query)
         failed = True
     if failed:
-        exit(1)
+        sys.exit(1)
 
     # successfully validated.
     print("Successfully validated API...")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
