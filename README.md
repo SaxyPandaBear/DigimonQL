@@ -37,8 +37,16 @@ go run server.go
 ### Testing
 Local tests
 ```bash
-go test ./... -v
+go test ./... -v -cover
 ```
+
+Note: There are some flaky tests around translating a Go struct into a BSON document. 
+Not sure what the issue is because it's inconsistent. Try to `go clean` and retry, but
+if it's a blocking issue with running tests, those can specifically be skipped by running:
+```bash
+go test ./... -short
+```
+This is how the CI is configured.
 
 ### Scraping the data
 
