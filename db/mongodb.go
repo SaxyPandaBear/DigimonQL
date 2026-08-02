@@ -8,6 +8,7 @@ import (
 	"github.com/saxypandabear/digimonql/graph/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.uber.org/zap"
 )
 
 const (
@@ -19,6 +20,7 @@ var ErrAmbiguousQuery error = fmt.Errorf("Ambiguous input could not be parsed in
 
 type MongoDBRepository struct {
 	Client *mongo.Client
+	Logger *zap.Logger
 }
 
 func (r *MongoDBRepository) GetDigimonByID(ctx context.Context, id string) (*model.Digimon, error) {
@@ -27,10 +29,12 @@ func (r *MongoDBRepository) GetDigimonByID(ctx context.Context, id string) (*mod
 	var d model.Digimon
 	err := coll.FindOne(ctx, bson.M{"_id": id}).Decode(&d)
 	if err == mongo.ErrNoDocuments {
+		r.Logger.Warn("found no document with given id", zap.String("id", id))
 		return nil, NotFound
 	}
 
 	if err != nil {
+		r.Logger.Error("failed to find document", zap.String("id", id), zap.Error(err))
 		return nil, err
 	}
 
@@ -42,6 +46,7 @@ func (r *MongoDBRepository) ListDigimon(ctx context.Context, filter *model.Filte
 
 	cursor, err := coll.Find(ctx, filter)
 	if err != nil {
+		r.Logger.Error("failed to query database", zap.Any("filter", filter), zap.Error(err))
 		return nil, err
 	}
 
@@ -49,6 +54,7 @@ func (r *MongoDBRepository) ListDigimon(ctx context.Context, filter *model.Filte
 	err = cursor.All(ctx, &results)
 
 	if err != nil {
+		r.Logger.Error("failed to traverse query results", zap.Any("filter", filter), zap.Error(err))
 		return nil, err
 	}
 
@@ -60,6 +66,7 @@ func (r *MongoDBRepository) Count(ctx context.Context) (int, error) {
 
 	count, err := coll.CountDocuments(ctx, bson.D{})
 	if err != nil {
+		r.Logger.Error("failed to count documents", zap.Error(err))
 		return 0, err
 	}
 
@@ -75,18 +82,24 @@ func (r *MongoDBRepository) Search(ctx context.Context, input *model.Search) ([]
 	// Translate the input model into a parseable way to search in MongoDB, then execute the query.
 	filter, err := translateSearchToMongoDocument(input)
 	if err != nil {
+		r.Logger.Error("failed to parse input search model", zap.Any("input", input), zap.Error(err))
 		return nil, err
 	}
 
 	cursor, err := coll.Find(ctx, filter)
 	if err != nil {
+		r.Logger.Error("failed to query database", zap.Any("input", input), zap.Error(err))
 		return nil, err
 	}
+
+	// TODO: troubleshooting
+	r.Logger.Info("translated document", zap.Any("parsed", filter), zap.Any("input", input))
 
 	var results []*model.Digimon // hopefully this works
 	err = cursor.All(ctx, &results)
 
 	if err != nil {
+		r.Logger.Error("failed to traverse query results", zap.Any("input", input), zap.Error(err))
 		return nil, err
 	}
 

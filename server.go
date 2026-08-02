@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/saxypandabear/digimonql/db"
 	"github.com/saxypandabear/digimonql/graph"
@@ -21,6 +22,8 @@ import (
 	limit "github.com/yangxikun/gin-limit-by-key"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/time/rate"
 )
 
@@ -62,6 +65,8 @@ func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
 		Cache: lru.New[string](100),
 	})
 
+	// TODO: add a AroundOperations that performs granular rate-limiting on the Count() operation
+
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
 	}
@@ -85,7 +90,7 @@ func rateLimitHandler() gin.HandlerFunc {
 	})
 }
 
-func instantiateDatabase() db.DigimonRepository {
+func instantiateDatabase(logger *zap.Logger) db.DigimonRepository {
 	mongoUrl, ok := os.LookupEnv("MONGO_URL")
 	if !ok {
 		// no MongoDB env vars found, so try to load the local JSON file
@@ -109,17 +114,32 @@ func instantiateDatabase() db.DigimonRepository {
 
 	return &db.MongoDBRepository{
 		Client: client,
+		Logger: logger,
 	}
 }
 
 func main() {
+	// took this config from my other project that runs on Railway
+	config := zap.NewProductionConfig()
+	config.Level.SetLevel(zapcore.DebugLevel)
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder // human readable timestamps for logs
+	config.EncoderConfig = encoderConfig
+	logger := zap.Must(config.Build())
+
+	zap.RedirectStdLog(logger) // log.PrintX() functions will log at an info level, always
+	zap.ReplaceGlobals(logger) // Not recommended, but I'm lazy
+	defer logger.Sync()
+
 	r := gin.Default()
+	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+	r.Use(ginzap.RecoveryWithZap(logger, true))
 	r.Use(rateLimitHandler())
 
-	d := instantiateDatabase()
+	d := instantiateDatabase(logger)
 	defer d.Close()
 
 	r.POST("/query", graphqlHandler(d))
 	r.GET("/", playgroundHandler())
-	r.Run()
+	r.Run() // let Railway inject the PORT env var into this
 }
