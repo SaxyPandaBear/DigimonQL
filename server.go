@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
@@ -48,6 +50,13 @@ func loadLocalData() []*model.Digimon {
 	return payload
 }
 
+func queryRateLimiter(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+	oc := graphql.GetOperationContext(ctx)
+	fmt.Printf("%s %s\n", oc.OperationName, oc.Variables)
+
+	return next(ctx)
+}
+
 func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
@@ -65,7 +74,8 @@ func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
 		Cache: lru.New[string](100),
 	})
 
-	// TODO: add a AroundOperations that performs granular rate-limiting on the Count() operation
+	// granular rate limit based on the query
+	h.AroundOperations(queryRateLimiter)
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
