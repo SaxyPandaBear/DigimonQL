@@ -12,6 +12,8 @@ import sys
 
 import requests
 
+NUM_REGISTERED = 1314
+
 
 def validate_single_query(d: dict) -> bool:
     if d["digimonType"] != "Food":
@@ -53,9 +55,32 @@ def validate_filter_query(digimons: list) -> bool:
 
 def validate_count_query(num: int) -> bool:
     return (
-        num >= 1314 # TODO: UPDATE THIS AFTER FIXING THE DATABASE
+        num >= NUM_REGISTERED
     )  # TODO: not sure if there's a good way to update this as new Digimon are added
 
+"""
+Imitate this filter query in MongoDB
+{
+    "find": "digimon",
+    "filter": {
+        "$and": [
+            {"name": {"$regex": "growlmon", "$options": "i"}},
+            {"level": { "$in": ["Champion", "Ultimate"] }},
+            {"previous_digivolutions": "guilmon"}
+        ]
+    }
+}
+There should be 3 documents that match this query, which are all of the Champion level Growlmon color variants
+"""
+def validate_search_query(digimons: list[dict]) -> bool:
+    expected = {"Growlmon (Orange)", "BlackGrowlmon", "Growlmon"}
+
+    if len(expected) != len(digimons):
+        return False
+
+    found: set[str] = {d["name"] for d in digimons}
+    diff = expected.difference(found)  # the set difference should be an empty set.
+    return len(diff) == 0
 
 def main():
     base_url = os.getenv("API_BASE_URL")
@@ -74,15 +99,27 @@ def main():
             attribute
         }
         digimons(input: { digimonType: "Food" }) {
+            id
             name
             digimonType
             level
+        }
+        search(
+            input: {
+                _where: {
+                    name: { _like: "growlmon" }
+                    level: { _in: ["Champion", "Ultimate"] }
+                    previousDigivolutions: { _contains: ["guilmon"] }
+                }
+            }
+        ) {
+            name
         }
         count
     }
     """
     query = {
-        "query": 'query IntegrationTest { digimon(id: "burgamon") { digimonType name level attribute } digimons(input: {digimonType: "Food"}) { id name digimonType level } count}'
+        "query": 'query IntegrationTest { digimon(id: "burgamon") { digimonType name level attribute } digimons(input: {digimonType: "Food"}) { id name digimonType level } search(input: {_where: { name: { _like: "growlmon" } level: { _in: ["Champion", "Ultimate"] } previousDigivolutions: { _contains: ["guilmon"] } } }) { name } count }'
     }
     resp = requests.post(
         f"{base_url}/query",
@@ -106,6 +143,7 @@ def main():
     single_query = r["data"]["digimon"]
     filter_query = r["data"]["digimons"]
     count_query = r["data"]["count"]
+    search_query = r["data"]["search"]
 
     # if the code makes it this far, each of the queries returned something, so don't fail-fast here
     failed = False
@@ -120,6 +158,10 @@ def main():
     if not validate_count_query(count_query):
         print("Failed validation for count query.")
         print(count_query)
+        failed = True
+    if not validate_search_query(search_query):
+        print("Failed validation for search query.")
+        print(search_query)
         failed = True
     if failed:
         sys.exit(1)
