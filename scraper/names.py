@@ -1,5 +1,6 @@
 # locally stored, hardcoded names for Digimon in reference book
 digimon_names = [
+    "habakirimon",
     "bearcatmon",
     "taowumon",
     "scourgechiropmon",

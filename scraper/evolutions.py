@@ -435,6 +435,7 @@ next_evolutions: dict[str, list[str]] = {
     "gekkomon": ["armalizamon"],
     "armalizamon": ["monarchlizamon"],
     "cougarmon": ["murasamemon", "weddinmon"],
+    "murasamemon": ["habakirimon"],
     "hyemon": ["fangmon"],
     "fangmon": ["marindevimon", "archnemon", "assaultmon", "cerberumon", "jewelbeemon", "vamdemon", "ex-tyranomon"],
     "fukamon": ["mococomon"],

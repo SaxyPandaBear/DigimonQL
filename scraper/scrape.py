@@ -237,7 +237,7 @@ def main():
 
     # if there are no failures, write the data out as JSON to be used as the backing data for the database
     with open(output_path, "w") as f:
-        json.dump(data, f, indent=2, sort_keys=True)  # pyright:ignore
+        json.dump(data, f, indent=2)  # pyright:ignore
         print(f"Successfully wrote out {len(data)} digimon scraped to {output_path}")
 
 
