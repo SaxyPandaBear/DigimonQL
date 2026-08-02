@@ -20,9 +20,3 @@ services:
     build:
       dockerfile: ./seed.Dockerfile
     depends_on: [mongo]
-  voyager:
-    image: graphql/voyager
-    ports:
-      - 8080:80
-    volumes:
-      - ./graph/schema.graphqls:/app/schema.graphql

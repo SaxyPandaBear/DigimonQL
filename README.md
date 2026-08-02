@@ -24,8 +24,7 @@ Prerequisite is to have the JSON data stored in `./data/digimon.json`, which is 
 docker compose up --build
 ```
 
-This should bring up the MongoDB instance, seeded, the GraphQL API, 
-and the [Voyager](https://github.com/APIs-guru/graphql-voyager) visualization.
+This should bring up the seeded MongoDB instance and the API. The API comes prepackaged with a GraphiQL visualizer.
 
 You can connect to the local MongoDB instance on port `27017`, and the API is exposed on port `8081`.
 
@@ -39,8 +38,8 @@ query Digimon {
 }
 ```
 
-#### Voyager
-![Voyager](./docs/voyager.png)
+#### GraphiQL in-browser explorer
+![GraphiQL](./docs/graphiql_demo.png)
 
 #### API call via Postman
 ![Postman-API-Call](./docs/postman.png)
