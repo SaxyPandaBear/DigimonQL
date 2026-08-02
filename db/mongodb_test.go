@@ -39,7 +39,7 @@ func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 	}
 
 	result := translateStringExpression(input, "moves")
-	assert.Len(t, result, 1) // root is the $and
+	assert.Len(t, result, 1)
 
 	moves, ok := result["moves"]
 	assert.True(t, ok)
@@ -80,7 +80,75 @@ func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 }
 
 func TestTranslateStringExpToBSON_OneInArray(t *testing.T) {
-	panic("not implemented")
+	like := "Pepper Breath"
+	input := &model.StringComparisonExpression{
+		Like: &like,
+		In:   []string{"Boom Bubble"},
+	}
+
+	result := translateStringExpression(input, "moves")
+	assert.Len(t, result, 1)
+
+	moves, ok := result["moves"]
+	assert.True(t, ok)
+	movesMap, ok := moves.(bson.M)
+	assert.True(t, ok)
+
+	assert.Len(t, movesMap, 1)
+
+	andExpression, ok := movesMap["$and"]
+	assert.True(t, ok)
+
+	andArr, ok := andExpression.(bson.A)
+	assert.True(t, ok)
+	assert.Len(t, andArr, 2) // the array should have both
+
+	// first elem is the Like exp
+	likeExp := andArr[0]
+	likeMap, ok := likeExp.(bson.M)
+	assert.True(t, ok)
+
+	reg, ok := likeMap["$regex"]
+	assert.True(t, ok)
+	assert.Equal(t, "/Pepper Breath/i", reg)
+
+	// There is a special translation here that reconfigures
+	// the In expression to use an $elemMatch instead of an $all
+	inExp := andArr[1]
+	inMap, ok := inExp.(bson.M)
+	assert.True(t, ok)
+
+	match, ok := inMap["$elemMatch"]
+	assert.True(t, ok)
+
+	matchMap, ok := match.(bson.M)
+	assert.True(t, ok)
+	assert.Len(t, matchMap, 1)
+
+	eq, ok := matchMap["eq"]
+	assert.True(t, ok)
+
+	eqStr, ok := eq.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "Boom Bubble", eqStr)
+}
+
+func TestTranslateStringExpToBSON_NoArray(t *testing.T) {
+	like := "Pepper Breath"
+	input := &model.StringComparisonExpression{
+		Like: &like,
+	}
+
+	result := translateStringExpression(input, "moves")
+	assert.Len(t, result, 1)
+
+	// In this scenario, the result should be a simple map { moves: "Pepper Breath" }
+	moves, ok := result["moves"]
+	assert.True(t, ok)
+
+	movesStr, ok := moves.(string)
+	assert.True(t, ok)
+	assert.Equal(t, like, movesStr)
 }
 
 func TestTranslateArrayExpToBSON_OneInArray(t *testing.T) {

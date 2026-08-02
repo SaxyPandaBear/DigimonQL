@@ -135,7 +135,7 @@ func translateStringExpression(input *model.StringComparisonExpression, attr str
 		// There's special translation that has to happen if the In array is size 1 vs > 1.
 		// If we tried to optimize for a single element, this needs to be translated to an $elemMatch
 		if len(input.In) == 1 {
-			in = bson.M{
+			in[attr] = bson.M{
 				"$elemMatch": bson.M{
 					"eq": input.In[0],
 				},
@@ -150,7 +150,7 @@ func translateStringExpression(input *model.StringComparisonExpression, attr str
 		}
 	} else if len(like) > 0 {
 		// if its just the Like clause, use that
-		result[attr] = like
+		result[attr] = *input.Like
 	} else if len(in) > 0 {
 		result = in
 	}
