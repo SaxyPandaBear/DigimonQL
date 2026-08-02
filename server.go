@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -92,14 +91,14 @@ func instantiateDatabase(logger *zap.Logger) db.DigimonRepository {
 	mongoUrl, ok := os.LookupEnv("MONGO_URL")
 	if !ok {
 		// no MongoDB env vars found, so try to load the local JSON file
-		fmt.Println("Falling back to local JSON file for data...")
+		logger.Debug("Falling back to local JSON file for data...")
 		return &db.LocalDigimonRepository{
 			Digimons: loadLocalData(),
 		}
 	}
 
 	// connect to the MongoDB instance
-	fmt.Println("Connecting to MongoDB instance...") // TODO: switch to logger package
+	logger.Info("Connecting to MongoDB instance...")
 	bsonOpts := &options.BSONOptions{
 		UseJSONStructTags: true, // gql generated structs don't include BSON tags
 		OmitEmpty:         true,
@@ -107,7 +106,7 @@ func instantiateDatabase(logger *zap.Logger) db.DigimonRepository {
 	opts := options.Client().ApplyURI(mongoUrl).SetTimeout(200 * time.Millisecond).SetBSONOptions(bsonOpts)
 	client, err := mongo.Connect(opts)
 	if err != nil {
-		log.Fatal("Failed to connect to MongoDB ", err)
+		logger.Fatal("Failed to connect to MongoDB", zap.Error(err))
 	}
 
 	return &db.MongoDBRepository{
