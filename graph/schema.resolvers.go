@@ -7,7 +7,6 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/saxypandabear/digimonql/graph/model"
 )
@@ -31,7 +30,7 @@ func (r *queryResolver) Count(ctx context.Context) (*int32, error) {
 
 // Search is the resolver for the search field.
 func (r *queryResolver) Search(ctx context.Context, input *model.Search) ([]*model.Digimon, error) {
-	panic(fmt.Errorf("not implemented: Search - search"))
+	return r.Database.Search(ctx, input)
 }
 
 // Query returns QueryResolver implementation.
