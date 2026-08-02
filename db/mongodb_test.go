@@ -152,11 +152,42 @@ func TestTranslateStringExpToBSON_NoArray(t *testing.T) {
 }
 
 func TestTranslateArrayExpToBSON_OneInArray(t *testing.T) {
-	panic("not implemented")
+	input := &model.ArrayComparisonExpression{
+		Contains: []string{"Pepper Breath"},
+	}
+
+	result := translateArrayExpression(input, "foo")
+	assert.Len(t, result, 1)
+
+	// should just map { foo : "Pepper Breath" }
+	move, ok := result["foo"]
+	assert.True(t, ok)
+	assert.Equal(t, "Pepper Breath", move)
 }
 
 func TestTranslateArrayExpToBSON_MultipleInArray(t *testing.T) {
-	panic("not implemented")
+	input := &model.ArrayComparisonExpression{
+		Contains: []string{"Supreme Cannon", "Transcendent Sword"},
+	}
+
+	result := translateArrayExpression(input, "foo")
+	assert.Len(t, result, 1)
+
+	foo, ok := result["foo"]
+	assert.True(t, ok)
+
+	fooMap, ok := foo.(bson.M)
+	assert.True(t, ok)
+
+	all, ok := fooMap["$all"]
+	assert.True(t, ok)
+
+	allArr, ok := all.([]string)
+	assert.True(t, ok)
+	assert.Len(t, allArr, 2)
+	assert.Contains(t, allArr, "Supreme Cannon")
+	assert.Contains(t, allArr, "Transcendent Sword")
+	assert.NotContains(t, allArr, "Boom Bubble")
 }
 
 // Just do some permutations of the outer structure to validate

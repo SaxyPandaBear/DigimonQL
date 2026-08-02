@@ -90,6 +90,28 @@ func translateSearchToMongoDocument(input *model.Search) (bson.M, error) {
 	panic("Not implemented yet")
 }
 
+func translateArrayExpression(input *model.ArrayComparisonExpression, attr string) bson.M {
+	// as of right now, just a simple contains.
+	// implementation is similar to the String "_in" clause
+	if input == nil || len(input.Contains) < 1 {
+		return bson.M{}
+	}
+
+	if len(input.Contains) == 1 {
+		// simple doc that just matches to the element => { moves: "Boom Bubble" }
+		return bson.M{
+			attr: input.Contains[0],
+		}
+	}
+
+	// else, wrap the elements in an $all clause and return that
+	return bson.M{
+		attr: bson.M{
+			"$all": input.Contains,
+		},
+	}
+}
+
 func translateStringExpression(input *model.StringComparisonExpression, attr string) bson.M {
 	if input == nil {
 		return bson.M{}
