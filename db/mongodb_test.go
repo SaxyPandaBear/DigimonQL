@@ -64,7 +64,10 @@ func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 
 	reg, ok := likeMap["$regex"]
 	assert.True(t, ok)
-	assert.Equal(t, "/Pepper Breath/i", reg)
+	assert.Equal(t, "Pepper Breath", reg)
+	opts, ok := likeMap["$options"]
+	assert.True(t, ok)
+	assert.Equal(t, "i", opts)
 
 	inExp := andArr[1]
 	inMap, ok := inExp.(bson.M)
@@ -129,10 +132,15 @@ func TestTranslateStringExpToBSON_NoArray(t *testing.T) {
 
 	regex, ok := movesMap["$regex"]
 	assert.True(t, ok)
-
 	regexStr, ok := regex.(string)
 	assert.True(t, ok)
-	assert.Equal(t, "/Pepper Breath/i", regexStr)
+	assert.Equal(t, "Pepper Breath", regexStr)
+
+	options, ok := movesMap["$options"]
+	assert.True(t, ok)
+	optionsStr, ok := options.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "i", optionsStr)
 }
 
 func TestTranslateArrayExpToBSON_OneInArray(t *testing.T) {
@@ -225,7 +233,12 @@ func TestTranslateSearchToBSON(t *testing.T) {
 	assert.True(t, ok)
 	regexStr, ok := regex.(string)
 	assert.True(t, ok)
-	assert.Equal(t, "/Growlmon/i", regexStr)
+	assert.Equal(t, "Growlmon", regexStr)
+	options, ok := nameMap1["$options"]
+	assert.True(t, ok)
+	optionsStr, ok := options.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "i", optionsStr)
 
 	levelMap, ok := levelElem.(bson.M)
 	assert.True(t, ok)
@@ -282,10 +295,15 @@ func TestTranslateSearchToBSON_OneElem(t *testing.T) {
 
 	regex, ok := nameMap["$regex"]
 	assert.True(t, ok)
-
 	regexStr, ok := regex.(string)
 	assert.True(t, ok)
-	assert.Equal(t, "/Agumon/i", regexStr)
+	assert.Equal(t, "Agumon", regexStr)
+
+	options, ok := nameMap["$options"]
+	assert.True(t, ok)
+	optionsStr, ok := options.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "i", optionsStr)
 }
 
 func TestTranslateSearchToBSON_AmbiguousQuery(t *testing.T) {

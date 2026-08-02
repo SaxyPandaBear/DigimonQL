@@ -265,7 +265,8 @@ func translateStringExpression(input *model.StringComparisonExpression, attr str
 
 	if input.Like != nil {
 		// like is a case-insensitive regex
-		like["$regex"] = fmt.Sprintf("/%s/i", *input.Like)
+		like["$regex"] = *input.Like
+		like["$options"] = "i"
 	}
 
 	in := bson.M{}
