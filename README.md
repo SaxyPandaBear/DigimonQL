@@ -1,6 +1,7 @@
 # DigimonQL
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/SaxyPandaBear/DigimonQL/ci.yaml?style=for-the-badge)
+[![Build Passing](https://github.com/SaxyPandaBear/DigimonQL/actions/workflows/ci.yaml/badge.svg)](https://github.com/SaxyPandaBear/DigimonQL/actions/workflows/ci.yaml)
+[![API Functional](https://github.com/SaxyPandaBear/DigimonQL/actions/workflows/post_deploy.yaml/badge.svg)](https://github.com/SaxyPandaBear/DigimonQL/actions/workflows/post_deploy.yaml)
 
 Inspired by [PokeApi](https://pokeapi.co/), with the dream of being as comprehensive, despite Digimon information being pretty scattered.
 
@@ -16,6 +17,36 @@ TBD
 
 ## Running locally
 
+### Docker Compose
+Prerequisite is to have the JSON data stored in `./data/digimon.json`, which is the output from the scraper. 
+
+```bash
+docker compose up --build
+```
+
+This should bring up the MongoDB instance, seeded, the GraphQL API, 
+and the [Voyager](https://github.com/APIs-guru/graphql-voyager) visualization.
+
+You can connect to the local MongoDB instance on port `27017`, and the API is exposed on port `8081`.
+
+Verify that the API is up by making a GraphQL query against it:
+```graphql
+query Digimon {
+    digimon(id: "agumon") {
+        name
+        level
+    }
+}
+```
+
+#### Voyager
+![Voyager](./docs/voyager.png)
+
+#### API call via Postman
+![Postman-API-Call](./docs/postman.png)
+
+### Without Docker
+
 This uses [`gqlgen`](https://gqlgen.com/getting-started/) to generate the GraphQL models and plumbing,
 and is served via [Gin](https://github.com/gin-gonic/gin) over HTTP.
 
@@ -29,13 +60,14 @@ Generate the GraphQL models:
 go tool gqlgen generate
 ```
 
-Run the server:
+Run the server, backed directly by the local JSON file stored at `./data/digimon.json`:
 ```bash
 go run server.go
 ```
 
 ### Testing
-Local tests
+
+#### Local tests
 ```bash
 go test ./... -v -cover
 ```
@@ -47,6 +79,19 @@ if it's a blocking issue with running tests, those can specifically be skipped b
 go test ./... -short
 ```
 This is how the CI is configured.
+
+#### Integ tests
+There are integration/e2e tests in `./scraper/smoke_test.py` that can be run in the virtual environment.
+
+First, source the virtual environment.
+```bash
+cd ./scraper && source bin/activate
+```
+
+Then run it (this expects an `API_BASE_URL` environment variable to be set to the base URL of the service):
+```bash
+python smoke_test.py
+```
 
 ### Scraping the data
 

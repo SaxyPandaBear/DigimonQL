@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      dockerfile: ./Dockerfile
+    environment:
+      PORT: 8081
+      MONGO_URL: mongodb://root:example@mongo:27017/
+    ports:
+      - 8081:8081
+    depends_on: [mongo]
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+  mongoseed:
+    build:
+      dockerfile: ./seed.Dockerfile
+    depends_on: [mongo]
+  voyager:
+    image: graphql/voyager
+    ports:
+      - 8080:80
+    volumes:
+      - ./graph/schema.graphqls:/app/schema.graphql
