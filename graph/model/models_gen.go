@@ -14,13 +14,10 @@ type BooleanComparisonExpression struct {
 	Eq *bool `json:"_eq,omitempty"`
 }
 
-// Chainable expression for filtering down a search query.
+// Expression for filtering down a search query.
 //
 // All expressions are combined with a logical AND.
 type DigimonSearchExpression struct {
-	And                   []*DigimonSearchExpression   `json:"_and,omitempty"`
-	Or                    []*DigimonSearchExpression   `json:"_or,omitempty"`
-	Not                   []*DigimonSearchExpression   `json:"_not,omitempty"`
 	Name                  *StringComparisonExpression  `json:"name,omitempty"`
 	Level                 *StringComparisonExpression  `json:"level,omitempty"`
 	DigimonType           *StringComparisonExpression  `json:"digimonType,omitempty"`

@@ -2226,34 +2226,13 @@ func (ec *executionContext) unmarshalInputDigimonSearchExpression(ctx context.Co
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"_and", "_or", "_not", "name", "level", "digimonType", "attribute", "moves", "background", "previousDigivolutions", "nextDigivolutions", "isMode", "modes", "isXAntibody"}
+	fieldsInOrder := [...]string{"name", "level", "digimonType", "attribute", "moves", "background", "previousDigivolutions", "nextDigivolutions", "isMode", "modes", "isXAntibody"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "_and":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_and"))
-			data, err := ec.unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.And = data
-		case "_or":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_or"))
-			data, err := ec.unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Or = data
-		case "_not":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("_not"))
-			data, err := ec.unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Not = data
 		case "name":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalOStringComparisonExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐStringComparisonExpression(ctx, v)
@@ -3158,11 +3137,6 @@ func (ec *executionContext) marshalNDigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdi
 	return ec._Digimon(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNDigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx context.Context, v any) (*model.DigimonSearchExpression, error) {
-	res, err := ec.unmarshalInputDigimonSearchExpression(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3415,23 +3389,6 @@ func (ec *executionContext) marshalODigimon2ᚖgithubᚗcomᚋsaxypandabearᚋdi
 		return graphql.Null
 	}
 	return ec._Digimon(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalODigimonSearchExpression2ᚕᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpressionᚄ(ctx context.Context, v any) ([]*model.DigimonSearchExpression, error) {
-	if v == nil {
-		return nil, nil
-	}
-	vSlice := graphql.CoerceList(v)
-	var err error
-	res := make([]*model.DigimonSearchExpression, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNDigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) unmarshalODigimonSearchExpression2ᚖgithubᚗcomᚋsaxypandabearᚋdigimonqlᚋgraphᚋmodelᚐDigimonSearchExpression(ctx context.Context, v any) (*model.DigimonSearchExpression, error) {

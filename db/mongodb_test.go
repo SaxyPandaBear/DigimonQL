@@ -21,7 +21,8 @@ func TestTranslateBoolExpToBSON(t *testing.T) {
 	}
 
 	// should be { "name": true }
-	result := translateBooleanExpression(input, "name")
+	result, err := translateBooleanExpression(input, "name")
+	assert.NoError(t, err)
 	retrieved, ok := result["name"]
 	assert.True(t, ok)
 
@@ -38,7 +39,8 @@ func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 		In:   []string{"Supreme Cannon", "Transcendent Sword"},
 	}
 
-	result := translateStringExpression(input, "moves")
+	result, err := translateStringExpression(input, "moves")
+	assert.NoError(t, err)
 	assert.Len(t, result, 1)
 
 	moves, ok := result["moves"]
@@ -69,7 +71,7 @@ func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 	assert.True(t, ok)
 
 	// should be a map of $all -> array of strings
-	all, ok := inMap["$all"]
+	all, ok := inMap["$in"]
 	assert.True(t, ok)
 
 	allArr, ok := all.([]string)
@@ -80,57 +82,31 @@ func TestTranslateStringExpToBSON_MultipleInArray(t *testing.T) {
 }
 
 func TestTranslateStringExpToBSON_OneInArray(t *testing.T) {
+	input := &model.StringComparisonExpression{
+		In: []string{"Boom Bubble"},
+	}
+
+	result, err := translateStringExpression(input, "moves")
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+
+	moves, ok := result["moves"]
+	assert.True(t, ok)
+
+	eqStr, ok := moves.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "Boom Bubble", eqStr)
+}
+
+func TestTranslateStringExpToBSON_AmbiguousQuery(t *testing.T) {
 	like := "Pepper Breath"
 	input := &model.StringComparisonExpression{
 		Like: &like,
 		In:   []string{"Boom Bubble"},
 	}
 
-	result := translateStringExpression(input, "moves")
-	assert.Len(t, result, 1)
-
-	moves, ok := result["moves"]
-	assert.True(t, ok)
-	movesMap, ok := moves.(bson.M)
-	assert.True(t, ok)
-
-	assert.Len(t, movesMap, 1)
-
-	andExpression, ok := movesMap["$and"]
-	assert.True(t, ok)
-
-	andArr, ok := andExpression.(bson.A)
-	assert.True(t, ok)
-	assert.Len(t, andArr, 2) // the array should have both
-
-	// first elem is the Like exp
-	likeExp := andArr[0]
-	likeMap, ok := likeExp.(bson.M)
-	assert.True(t, ok)
-
-	reg, ok := likeMap["$regex"]
-	assert.True(t, ok)
-	assert.Equal(t, "/Pepper Breath/i", reg)
-
-	// There is a special translation here that reconfigures
-	// the In expression to use an $elemMatch instead of an $all
-	inExp := andArr[1]
-	inMap, ok := inExp.(bson.M)
-	assert.True(t, ok)
-
-	match, ok := inMap["$elemMatch"]
-	assert.True(t, ok)
-
-	matchMap, ok := match.(bson.M)
-	assert.True(t, ok)
-	assert.Len(t, matchMap, 1)
-
-	eq, ok := matchMap["eq"]
-	assert.True(t, ok)
-
-	eqStr, ok := eq.(string)
-	assert.True(t, ok)
-	assert.Equal(t, "Boom Bubble", eqStr)
+	_, err := translateStringExpression(input, "moves")
+	assert.ErrorIs(t, err, ErrAmbiguousQuery)
 }
 
 func TestTranslateStringExpToBSON_NoArray(t *testing.T) {
@@ -139,16 +115,24 @@ func TestTranslateStringExpToBSON_NoArray(t *testing.T) {
 		Like: &like,
 	}
 
-	result := translateStringExpression(input, "moves")
+	result, err := translateStringExpression(input, "moves")
+	assert.NoError(t, err)
 	assert.Len(t, result, 1)
 
-	// In this scenario, the result should be a simple map { moves: "Pepper Breath" }
+	// In this scenario, the result should have the regex
+	// { moves: { $regex: "/Pepper Breath/i" }}
 	moves, ok := result["moves"]
 	assert.True(t, ok)
 
-	movesStr, ok := moves.(string)
+	movesMap, ok := moves.(bson.M)
 	assert.True(t, ok)
-	assert.Equal(t, like, movesStr)
+
+	regex, ok := movesMap["$regex"]
+	assert.True(t, ok)
+
+	regexStr, ok := regex.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "/Pepper Breath/i", regexStr)
 }
 
 func TestTranslateArrayExpToBSON_OneInArray(t *testing.T) {
@@ -156,7 +140,8 @@ func TestTranslateArrayExpToBSON_OneInArray(t *testing.T) {
 		Contains: []string{"Pepper Breath"},
 	}
 
-	result := translateArrayExpression(input, "foo")
+	result, err := translateArrayExpression(input, "foo")
+	assert.NoError(t, err)
 	assert.Len(t, result, 1)
 
 	// should just map { foo : "Pepper Breath" }
@@ -170,7 +155,8 @@ func TestTranslateArrayExpToBSON_MultipleInArray(t *testing.T) {
 		Contains: []string{"Supreme Cannon", "Transcendent Sword"},
 	}
 
-	result := translateArrayExpression(input, "foo")
+	result, err := translateArrayExpression(input, "foo")
+	assert.NoError(t, err)
 	assert.Len(t, result, 1)
 
 	foo, ok := result["foo"]
@@ -190,40 +176,138 @@ func TestTranslateArrayExpToBSON_MultipleInArray(t *testing.T) {
 	assert.NotContains(t, allArr, "Boom Bubble")
 }
 
-// Just do some permutations of the outer structure to validate
-// that things are translated appropriately
+// will probably use this as an integ test...
 func TestTranslateSearchToBSON(t *testing.T) {
-	panic("not implemented")
+	name := "Growlmon"
+	where := &model.DigimonSearchExpression{
+		Name: &model.StringComparisonExpression{
+			Like: &name,
+		},
+		Level: &model.StringComparisonExpression{
+			In: []string{"Champion", "Ultimate"},
+		},
+		PreviousDigivolutions: &model.ArrayComparisonExpression{
+			Contains: []string{"guilmon"},
+		},
+	}
+
+	input := &model.Search{
+		Where: where,
+	}
+
+	result, err := translateSearchToMongoDocument(input)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+
+	// the result map should be wrapped in an AND clause
+	andExp, ok := result["$and"]
+	assert.True(t, ok)
+
+	andArr, ok := andExp.(bson.A)
+	assert.True(t, ok)
+	assert.Len(t, andArr, 3)
+
+	nameElem := andArr[0]
+	levelElem := andArr[1]
+	digivolutionElem := andArr[2]
+
+	nameMap, ok := nameElem.(bson.M)
+	assert.True(t, ok)
+	nameElem1, ok := nameMap["name"]
+	assert.True(t, ok)
+	nameMap1, ok := nameElem1.(bson.M)
+	regex, ok := nameMap1["$regex"]
+	assert.True(t, ok)
+	regexStr, ok := regex.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "/Growlmon/i", regexStr)
+
+	levelMap, ok := levelElem.(bson.M)
+	assert.True(t, ok)
+	levelElem1, ok := levelMap["level"]
+	assert.True(t, ok)
+	levelMap1, ok := levelElem1.(bson.M)
+	all, ok := levelMap1["$in"]
+	assert.True(t, ok)
+	allArr, ok := all.([]string)
+	assert.True(t, ok)
+	assert.Len(t, allArr, 2)
+	assert.Equal(t, "Champion", allArr[0])
+	assert.Equal(t, "Ultimate", allArr[1])
+
+	// there's only 1 elem in the input, so this is a simple translation
+	// this should just be the string element "guilmon"
+	digiMap, ok := digivolutionElem.(bson.M)
+	assert.True(t, ok)
+	digiElem, ok := digiMap["previous_digivolutions"]
+	assert.True(t, ok)
+	digiStr, ok := digiElem.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "guilmon", digiStr)
 }
 
-func TestTranslateSearchToBSON_AND(t *testing.T) {
-	panic("not implemented")
+func TestTranslateSearchToBSON_OneElem(t *testing.T) {
+	name := "Agumon"
+	where := &model.DigimonSearchExpression{
+		Name: &model.StringComparisonExpression{
+			Like: &name,
+		},
+	}
+
+	input := &model.Search{
+		Where: where,
+	}
+
+	result, err := translateSearchToMongoDocument(input)
+	assert.NoError(t, err)
+	assert.Len(t, result, 1)
+
+	// this document should just have a name query
+	// { "name": { "$regex": "..." } }
+	nameExp, ok := result["name"]
+	assert.True(t, ok)
+
+	nameMap, ok := nameExp.(bson.M)
+	assert.True(t, ok)
+
+	regex, ok := nameMap["$regex"]
+	assert.True(t, ok)
+
+	regexStr, ok := regex.(string)
+	assert.True(t, ok)
+	assert.Equal(t, "/Agumon/i", regexStr)
 }
 
-func TestTranslateSearchToBSON_OR(t *testing.T) {
-	panic("not implemented")
-}
+func TestTranslateSearchToBSON_AmbiguousQuery(t *testing.T) {
+	val := "foo"
+	boolVal := false
+	where := &model.DigimonSearchExpression{
+		Name: &model.StringComparisonExpression{
+			In: []string{"abc", "123"},
+		},
+		Level: &model.StringComparisonExpression{
+			Like: &val,
+		},
+		Background: &model.StringComparisonExpression{
+			Like: &val,
+			In:   []string{"This", "should", "not", "be", "an", "issue"},
+		},
+		IsMode: &model.BooleanComparisonExpression{
+			Eq: &boolVal,
+		},
+		Modes: &model.ArrayComparisonExpression{
+			Contains: []string{"foo", "bar"},
+		},
+		Attribute: &model.StringComparisonExpression{
+			Like: &val,
+			In:   []string{"This should raise an error"},
+		},
+	}
 
-func TestTranslateSearchToBSON_NOT(t *testing.T) {
-	panic("not implemented")
-}
+	input := &model.Search{
+		Where: where,
+	}
 
-func TestTranslateSearchToBSON_AND_NOT(t *testing.T) {
-	panic("not implemented")
-}
-
-func TestTranslateSearchToBSON_OR_AND(t *testing.T) {
-	panic("not implemented")
-}
-
-func TestTranslateSearchToBSON_NOT_AND_OR(t *testing.T) {
-	panic("not implemented")
-}
-
-func TestTranslateSearchToBSON_AND_AND(t *testing.T) {
-	panic("not implemented")
-}
-
-func TestTranslateSearchToBSON_OR_OR_OR(t *testing.T) {
-	panic("not implemented")
+	_, err := translateSearchToMongoDocument(input)
+	assert.ErrorIs(t, err, ErrAmbiguousQuery)
 }

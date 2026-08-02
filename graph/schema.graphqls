@@ -66,14 +66,11 @@ input ArrayComparisonExpression {
 }
 
 """
-Chainable expression for filtering down a search query.
+Expression for filtering down a search query.
 
 All expressions are combined with a logical AND.
 """
 input DigimonSearchExpression {
-    _and: [DigimonSearchExpression!]
-    _or: [DigimonSearchExpression!]
-    _not: [DigimonSearchExpression!]
     name: StringComparisonExpression
     level: StringComparisonExpression
     digimonType: StringComparisonExpression
