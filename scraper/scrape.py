@@ -21,7 +21,7 @@ info_tag = "p-ref__info"  # section that has details like level, type, attribute
 profile_tag = "p-ref__txt"  # description of the Digimon
 
 # There is a set of digimon that don't have any evolution mappings to them (not even TCG), for whatever reason.
-skipped = {"vademon2", "burpmon", "trailmon", "yggdrasill7d6", "yoxtuyoxtumon"}
+skipped = {"burpmon", "yggdrasill7d6", "yoxtuyoxtumon"}
 
 
 # input is in the form <img src="../cimages/digimon/bearcatmon.jpg" alt="">
