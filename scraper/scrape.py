@@ -21,7 +21,7 @@ info_tag = "p-ref__info"  # section that has details like level, type, attribute
 profile_tag = "p-ref__txt"  # description of the Digimon
 
 # There is a set of digimon that don't have any evolution mappings to them (not even TCG), for whatever reason.
-skipped = ["vademon2", "burpmon", "trailmon", "yggdrasill7d6", "yoxtuyoxtumon"]
+skipped = {"vademon2", "burpmon", "trailmon", "yggdrasill7d6", "yoxtuyoxtumon"}
 
 
 # input is in the form <img src="../cimages/digimon/bearcatmon.jpg" alt="">
@@ -72,11 +72,12 @@ def are_names_in_dict_valid(d: dict[str, list[str]]) -> bool:
 
 
 def should_skip_mapping(name: str) -> bool:
-    return (
-        name.endswith(("_x", "-x", "-xwars"))
-        or name.startswith("shoutmon")
-        or name in skipped
-    )
+    return name in skipped
+    # return (
+    #     name.endswith(("_x", "-x", "-xwars"))
+    #     or name.startswith("shoutmon")
+    #     or name in skipped
+    # )
 
 
 # logically, we can iterate over the unidirectional digivolutions and
@@ -162,8 +163,8 @@ def validate_references():
         print("UNMATCHED DIGIMON MUST BE ADDRESSED.")
         for batch in itertools.batched(unmapped, 8):
             print("\t", list(batch))
-            print("Exiting early to avoid compute...")
-            sys.exit(0)
+        print("Exiting early to avoid compute...")
+        sys.exit(0)
 
 
 def main():
