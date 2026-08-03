@@ -82,10 +82,10 @@ def should_skip_mapping(name: str) -> bool:
 # logically, we can iterate over the unidirectional digivolutions and
 # derive the link going backwards as its own separate set. this is to cut
 # down on how much time it takes to handwrite the mappings.
-def derive_previous_digivolutions() -> dict[str, list[str]]:
+def derive_inverse_relationship(mappings: dict[str, list[str]]) -> dict[str, list[str]]:
     temp = {}
 
-    for k, v in next_evolutions.items():
+    for k, v in mappings.items():
         for digimon in v:
             if digimon not in temp:
                 # place a new entry
@@ -123,7 +123,7 @@ def validate_references():
         sys.exit(1)
 
     # for every evolution chain, each name should be the directory name/ID, not the localized name
-    previous_evolutions = derive_previous_digivolutions()
+    previous_evolutions = derive_inverse_relationship(next_evolutions)
     print("Checking next evolutions...")
     if not are_names_in_dict_valid(next_evolutions):
         print("At least one next evolution chain is invalid.")
@@ -167,9 +167,12 @@ def validate_references():
 
 
 def main():
-    validate_references()  # ensure the bootstrapping data is all valid before beginning to scrape
-    # TODO: clean up later
-    previous_evolutions = derive_previous_digivolutions()
+    validate_references()  # ensure the bootstrapping data is all valid before beginning to scrape'
+
+    # derive mappings
+    previous_evolutions = derive_inverse_relationship(next_evolutions)
+    digimon_modes.update(derive_inverse_relationship(digimon_modes))
+
     data = []
     failures = []
     for name in digimon_names:
