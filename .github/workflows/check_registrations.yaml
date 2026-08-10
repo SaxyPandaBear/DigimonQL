@@ -4,6 +4,7 @@ on:
   schedule:
     - cron: "30 16 1 * *"
       timezone: "America/New_York"
+  workflow_dispatch:
 
 jobs:
   post-deploy:
