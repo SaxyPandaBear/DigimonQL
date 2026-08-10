@@ -94,6 +94,19 @@ python smoke_test.py
 
 ### Scraping the data
 
+#### Adding a new Digimon reference
+Occassionally, there will be a new Digimon that gets added to the Encyclopedia (Reference Book). 
+The directory name/ID for the new Digimon must be added to the `./scraper/.names.py` list, and
+then the scraper needs to be rerun. 
+
+You can run against the entire set of names, or just prepend the new data by supplying a command-line argument:
+```bash
+python scrape.py --names heliosboamon
+```
+
+Note that the list of names supplied may create an ordering issue with the output JSON array, but ultimately that
+doesn't matter for the destination because MongoDB is indexing on the `_id` field, and not the order of the data.
+
 #### Digimon Info
 * [Digimon Reference Book](https://digimon.net/reference_en/)
 

@@ -35,7 +35,7 @@ def main():
     print(f"The Digimon Encyclopedia indicates there are {numRegistered} registered Digimon.")
 
     # query the API and see how many documents are in it
-    query = {"query": "count"}
+    query = {"query": "query { count }"}
     r = requests.post(f"{base_url}/query", json=query, headers={"Content-Type": "application/json; charset=utf-8"})
     if r.status_code != 200:
         print(f"Expected status code 200, but got {r.status_code}")

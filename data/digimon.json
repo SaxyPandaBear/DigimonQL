@@ -1,5 +1,20 @@
 [
   {
+    "_id": "heliosboamon",
+    "name": "Heliosboamon",
+    "level": "Ultimate",
+    "type": "Reptile",
+    "attribute": "Data",
+    "moves": [
+      "Soul Pulverizer",
+      "Restrict Eye"
+    ],
+    "img_src": "https://digimon.net/cimages/digimon/heliosboamon.jpg",
+    "background": "A Reptile Ultimate Digimon covered in glittering white scales. The white scales covering its body vibrate at an extreme rate when exposed to sunlight. After constricting another Digimon as its prey, Heliosboamon uses these extreme vibrations to break the body down into the smallest pieces of data. This data from the destroyed Digimon is then absorbed through its scales as nourishment. The ornaments Heliosboamon wears on its head, neck and abdomen are made of Gold Digizoid and function as protective armor. Since these ornaments gradually grow larger over time, a Heliosboamon with large ornaments can be said to have survived long-term amongst fierce competition. At a glance, it appears that Heliosboamon has three eyes, however only the one on its forehead is an actual eye. Those on the left and right are simply patterns and do not function as eyes.\r\nThe large, ring-shaped accessory on Heliosboamon's neck can generate laser-like blades that spin rapidly. Using its most powerful offensive technique, Soul Pulverizer, Heliosboamon rams into opponents with these blades spinning at high speed. It also possesses Restrict Eye, which allows it to paralyze anyone who meets the gaze of the eye on its forehead. Typically when hunting, it holds its prey in place using Restrict Eye, finishes it off using Soul Pulverizer then constricts the body to break it down and absorb the data.\r\nDue to its scales being most effective when exposed to sunlight, Heliosboamon tends to dislike environments with no light. For this reason, the best strategy when targeted by Heliosboamon is to flee to a dark place that light cannot penetrate.",
+    "is_mode": false,
+    "is_x_antibody": false
+  },
+  {
     "_id": "habakirimon",
     "name": "Habakirimon",
     "level": "Mega",

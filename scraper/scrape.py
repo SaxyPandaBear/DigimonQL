@@ -1,4 +1,5 @@
 # pyright: reportOptionalSubscript=false, reportOptionalMemberAccess=false
+import argparse
 import itertools
 import json
 import sys
@@ -21,7 +22,7 @@ info_tag = "p-ref__info"  # section that has details like level, type, attribute
 profile_tag = "p-ref__txt"  # description of the Digimon
 
 # There is a set of digimon that don't have any evolution mappings to them (not even TCG), for whatever reason.
-skipped = {"burpmon", "yggdrasill7d6", "yoxtuyoxtumon"}
+skipped = {"burpmon", "yggdrasill7d6", "yoxtuyoxtumon", "heliosboamon"}
 
 
 # input is in the form <img src="../cimages/digimon/bearcatmon.jpg" alt="">
@@ -168,7 +169,17 @@ def validate_references():
 
 
 def main():
-    validate_references()  # ensure the bootstrapping data is all valid before beginning to scrape'
+    parser = argparse.ArgumentParser(prog="DigimonQL Scraper", description="Scrape Digimon Encyclopedia to populate local JSON file")
+    parser.add_argument("--names", action="extend", nargs="+", help="variable length list of digimon IDs to specifically target for scraping")
+    args = parser.parse_args()
+
+    full_set = True
+    input_names = digimon_names
+    if args.names is not None:
+        full_set = False
+        input_names = args.names
+
+    validate_references()  # ensure the bootstrapping data is all valid before beginning to scrape
 
     # derive mappings
     previous_evolutions = derive_inverse_relationship(next_evolutions)
@@ -176,7 +187,7 @@ def main():
 
     data = []
     failures = []
-    for name in digimon_names:
+    for name in input_names:
         digimon_url = f"{url_template}{name}"
         print(f"Checking {digimon_url}...")
         r = requests.get(digimon_url)
@@ -229,7 +240,7 @@ def main():
 
         data.append(result)
 
-        sleep(0.05)  # wait for rate-limiting
+        sleep(0.03)  # wait for rate-limiting
 
     # after iterating over all of the digimon, check the failures (if any).
     # if there are failures, flag it to be addressed and exit early
@@ -240,9 +251,20 @@ def main():
         sys.exit(1)
 
     # if there are no failures, write the data out as JSON to be used as the backing data for the database
-    with open(output_path, "w") as f:
-        json.dump(data, f, indent=2)  # pyright:ignore
-        print(f"Successfully wrote out {len(data)} digimon scraped to {output_path}")
+    # note: if full_set is False, then we want to merge with the existing data set
+    if full_set:
+        with open(output_path, "w") as f:
+            json.dump(data, f, indent=2)  # pyright:ignore
+            print(f"Successfully wrote out {len(data)} digimon scraped to {output_path}")
+    else:
+        with open(output_path, "r") as f:
+            # read the dataset first
+            current_data = json.load(f)
+        # need to account for collisions in the dataset with the input, so can't do simple .extend() operation
+        data.extend([d for d in current_data if d["_id"] not in input_names])
+        with open(output_path, "w") as f:
+            json.dump(data, f, indent=2)
+            print(f"Successfully wrote out {len(data)} digimon scraped to {output_path}")
 
 
 if __name__ == "__main__":
