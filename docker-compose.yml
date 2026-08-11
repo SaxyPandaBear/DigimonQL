@@ -5,9 +5,12 @@ services:
     environment:
       PORT: 8081
       MONGO_URL: mongodb://root:example@mongo:27017/
+      REDIS_URL: redis://default:default@redis:6379
+      COUNT_QUERY_LIMIT: 5 # low query limit for testing rate limiter
     ports:
       - 8081:8081
-    depends_on: [mongo]
+    depends_on: [mongo, redis]
+    restart: on-failure
   mongo:
     image: mongo
     restart: always
@@ -20,3 +23,10 @@ services:
     build:
       dockerfile: ./seed.Dockerfile
     depends_on: [mongo]
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    environment:
+      REDIS_ARGS: "--requirepass default"
+    restart: always

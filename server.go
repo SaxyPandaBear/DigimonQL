@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -12,11 +14,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/bytedance/gopkg/util/logger"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/saxypandabear/digimonql/db"
 	"github.com/saxypandabear/digimonql/graph"
 	"github.com/saxypandabear/digimonql/graph/model"
+	"github.com/saxypandabear/digimonql/limiter"
 	"github.com/vektah/gqlparser/v2/ast"
 	limit "github.com/yangxikun/gin-limit-by-key"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -25,6 +30,19 @@ import (
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/time/rate"
 )
+
+const (
+	MongoUrlKey            = "MONGO_URL"
+	RedisUrlKey            = "REDIS_URL"
+	CountQueryLimitKey     = "COUNT_QUERY_LIMIT"
+	defaultCountQueryLimit = 100
+)
+
+type GraphOpts struct {
+	Database        db.DigimonRepository
+	RedisClient     *redis.Client
+	CountQueryLimit int
+}
 
 func loadLocalData() []*model.Digimon {
 	f, err := os.Open("./data/digimon.json")
@@ -47,10 +65,10 @@ func loadLocalData() []*model.Digimon {
 	return payload
 }
 
-func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
+func graphqlHandler(opts *GraphOpts) gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: graph.NewGraphResolver(database)}))
+	h := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: graph.NewGraphResolver(opts.Database)}))
 
 	// Server setup:
 	h.AddTransport(transport.Options{})
@@ -63,6 +81,9 @@ func graphqlHandler(database db.DigimonRepository) gin.HandlerFunc {
 	h.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New[string](100),
 	})
+
+	// custom rate limiter middleware backed by Redis
+	h.AroundOperations(limiter.CountRateLimiter(opts.RedisClient, opts.CountQueryLimit))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -87,11 +108,11 @@ func rateLimitHandler() gin.HandlerFunc {
 	})
 }
 
-func instantiateDatabase(logger *zap.Logger) db.DigimonRepository {
-	mongoUrl, ok := os.LookupEnv("MONGO_URL")
+func instantiateDatabase() db.DigimonRepository {
+	mongoUrl, ok := os.LookupEnv(MongoUrlKey)
 	if !ok {
 		// no MongoDB env vars found, so try to load the local JSON file
-		logger.Debug("Falling back to local JSON file for data...")
+		zap.L().Debug("Falling back to local JSON file for data...")
 		return &db.LocalDigimonRepository{
 			Digimons: loadLocalData(),
 		}
@@ -111,7 +132,54 @@ func instantiateDatabase(logger *zap.Logger) db.DigimonRepository {
 
 	return &db.MongoDBRepository{
 		Client: client,
-		Logger: logger,
+	}
+}
+
+func instantiateRedisClient() *redis.Client {
+	url, ok := os.LookupEnv(RedisUrlKey)
+	if !ok {
+		logger.Fatal("no Redis URL set in environment")
+	}
+
+	opts, err := redis.ParseURL(url)
+	if err != nil {
+		logger.Fatal("failed to parse Redis URL", err)
+	}
+
+	client := redis.NewClient(opts)
+
+	_, err = client.Ping(context.TODO()).Result()
+	if err != nil {
+		logger.Fatal("failed to connect to Redis instance", err)
+	}
+
+	return client
+}
+
+func getIntOrDefault(key string, def int) int {
+	valueStr := os.Getenv(key)
+	if len(valueStr) == 0 {
+		return def
+	}
+
+	value, err := strconv.Atoi(valueStr)
+	if err != nil {
+		zap.L().Error("failed to parse int value from environment", zap.String("key", key), zap.Int("default", def), zap.Error(err))
+		return def
+	}
+
+	return value
+}
+
+func initGraphOpts() *GraphOpts {
+	d := instantiateDatabase()
+	rc := instantiateRedisClient()
+	countLimit := getIntOrDefault(CountQueryLimitKey, defaultCountQueryLimit)
+
+	return &GraphOpts{
+		Database:        d,
+		RedisClient:     rc,
+		CountQueryLimit: countLimit,
 	}
 }
 
@@ -131,12 +199,13 @@ func main() {
 	r := gin.Default()
 	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logger, true))
-	r.Use(rateLimitHandler())
+	r.Use(rateLimitHandler()) // Gin scoped overall API rate limit. NOT granular
 
-	d := instantiateDatabase(logger)
-	defer d.Close()
+	opts := initGraphOpts()
+	defer opts.Database.Close()
+	defer opts.RedisClient.Close()
 
-	r.POST("/query", graphqlHandler(d))
+	r.POST("/query", graphqlHandler(opts))
 	r.GET("/", playgroundHandler())
 	r.Run() // let Railway inject the PORT env var into this
 }
