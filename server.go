@@ -14,7 +14,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/bytedance/gopkg/util/logger"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -119,7 +118,7 @@ func instantiateDatabase() db.DigimonRepository {
 	}
 
 	// connect to the MongoDB instance
-	logger.Info("Connecting to MongoDB instance...")
+	zap.L().Debug("Connecting to MongoDB instance")
 	bsonOpts := &options.BSONOptions{
 		UseJSONStructTags: true, // gql generated structs don't include BSON tags
 		OmitEmpty:         true,
@@ -127,7 +126,12 @@ func instantiateDatabase() db.DigimonRepository {
 	opts := options.Client().ApplyURI(mongoUrl).SetTimeout(200 * time.Millisecond).SetBSONOptions(bsonOpts)
 	client, err := mongo.Connect(opts)
 	if err != nil {
-		logger.Fatal("Failed to connect to MongoDB", zap.Error(err))
+		zap.L().Fatal("Failed to connect to MongoDB", zap.Error(err))
+	}
+
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		zap.L().Fatal("Failed to ping MongoDB instance", zap.Error(err))
 	}
 
 	return &db.MongoDBRepository{
@@ -138,19 +142,19 @@ func instantiateDatabase() db.DigimonRepository {
 func instantiateRedisClient() *redis.Client {
 	url, ok := os.LookupEnv(RedisUrlKey)
 	if !ok {
-		logger.Fatal("no Redis URL set in environment")
+		zap.L().Fatal("no Redis URL set in environment")
 	}
 
 	opts, err := redis.ParseURL(url)
 	if err != nil {
-		logger.Fatal("failed to parse Redis URL", err)
+		zap.L().Fatal("failed to parse Redis URL", zap.Error(err))
 	}
 
 	client := redis.NewClient(opts)
 
 	_, err = client.Ping(context.TODO()).Result()
 	if err != nil {
-		logger.Fatal("failed to connect to Redis instance", err)
+		zap.L().Fatal("failed to connect to Redis instance", zap.Error(err))
 	}
 
 	return client

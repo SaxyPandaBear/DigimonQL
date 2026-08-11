@@ -6,7 +6,6 @@ tool github.com/99designs/gqlgen
 
 require (
 	github.com/99designs/gqlgen v0.17.94
-	github.com/bytedance/gopkg v0.1.4
 	github.com/gin-contrib/zap v1.1.7
 	github.com/gin-gonic/gin v1.12.0
 	github.com/redis/go-redis/v9 v9.22.0
@@ -20,6 +19,7 @@ require (
 
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
+	github.com/bytedance/gopkg v0.1.4 // indirect
 	github.com/bytedance/sonic v1.15.2 // indirect
 	github.com/bytedance/sonic/loader v0.5.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
