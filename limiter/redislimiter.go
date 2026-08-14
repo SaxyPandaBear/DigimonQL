@@ -3,19 +3,31 @@ package limiter
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
 const (
-	countOperationName = "Count"   // global key for Count queries, and name of GraphQL operation
-	window             = time.Hour // sliding window for expiry
+	countOperationName  = "Count"   // global key for Count queries, and name of GraphQL operation
+	window              = time.Hour // sliding window for expiry
+	authorizationHeader = "Authorization"
 )
 
-func CountRateLimiter(rc *redis.Client, limit int) graphql.OperationMiddleware {
+var bearerTokenPattern = regexp.MustCompile("Bearer ([[:alnum:]]+)")
+
+/**
+ * GraphQL level middleware
+ * Using a global key, institute a service-wide rate limit on executing the Count() query,
+ * because it does a DB scan. Could potentially try to rely on caching instead, but this
+ * stops any potential bleeding.
+ */
+func CountQueryLimitHandler(rc *redis.Client, limit int) graphql.OperationMiddleware {
 	return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		oc := graphql.GetOperationContext(ctx)
 
@@ -56,4 +68,27 @@ func CountRateLimiter(rc *redis.Client, limit int) graphql.OperationMiddleware {
 		// Continue executing the operation
 		return next(ctx)
 	}
+}
+
+/**
+ * Gin level middleware
+ */
+func AuthenticatedRateLimitHandler(rc *redis.Client, unauthLimit, authLimit int) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		copy := ctx.Copy()
+		token, err := ParseBearerToken(copy.GetHeader(authorizationHeader))
+		if err != nil {
+			// problem parsing the auth header
+			zap.L().Error("failed to parse auth header", zap.Any("headers", copy.Request.Header), zap.Error(err))
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+		}
+
+		zap.L().Debug("parsed token successfully", zap.String("token", token))
+
+		ctx.Next()
+	}
+}
+
+func ParseBearerToken(auth string) (string, error) {
+	return bearerTokenPattern.FindString(auth), nil
 }

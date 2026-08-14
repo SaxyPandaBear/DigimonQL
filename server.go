@@ -31,16 +31,22 @@ import (
 )
 
 const (
-	MongoUrlKey            = "MONGO_URL"
-	RedisUrlKey            = "REDIS_URL"
-	CountQueryLimitKey     = "COUNT_QUERY_LIMIT"
-	defaultCountQueryLimit = 100
+	MongoUrlKey                     = "MONGO_URL"
+	RedisUrlKey                     = "REDIS_URL"
+	CountQueryLimitKey              = "COUNT_QUERY_LIMIT"
+	defaultCountQueryLimit          = 100
+	UnauthenticatedCallLimitKey     = "UNAUTHENTICATED_ALLOWED_CALLS"
+	AuthenticatedCallLimitKey       = "AUTHENTICATED_ALLOWED_CALLS"
+	defaultUnauthenticatedCallLimit = 5      // per minute
+	defaultAuthenticatedCallLimit   = 10_000 // per minute
 )
 
 type GraphOpts struct {
-	Database        db.DigimonRepository
-	RedisClient     *redis.Client
-	CountQueryLimit int
+	Database                 db.DigimonRepository
+	RedisClient              *redis.Client
+	CountQueryLimit          int
+	UnauthenticatedRateLimit int
+	AuthenticatedRateLimit   int
 }
 
 func loadLocalData() []*model.Digimon {
@@ -82,7 +88,7 @@ func graphqlHandler(opts *GraphOpts) gin.HandlerFunc {
 	})
 
 	// custom rate limiter middleware backed by Redis
-	h.AroundOperations(limiter.CountRateLimiter(opts.RedisClient, opts.CountQueryLimit))
+	h.AroundOperations(limiter.CountQueryLimitHandler(opts.RedisClient, opts.CountQueryLimit))
 
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -179,11 +185,15 @@ func initGraphOpts() *GraphOpts {
 	d := instantiateDatabase()
 	rc := instantiateRedisClient()
 	countLimit := getIntOrDefault(CountQueryLimitKey, defaultCountQueryLimit)
+	unauthLimit := getIntOrDefault(UnauthenticatedCallLimitKey, defaultUnauthenticatedCallLimit)
+	authLimit := getIntOrDefault(AuthenticatedCallLimitKey, defaultAuthenticatedCallLimit)
 
 	return &GraphOpts{
-		Database:        d,
-		RedisClient:     rc,
-		CountQueryLimit: countLimit,
+		Database:                 d,
+		RedisClient:              rc,
+		CountQueryLimit:          countLimit,
+		UnauthenticatedRateLimit: unauthLimit,
+		AuthenticatedRateLimit:   authLimit,
 	}
 }
 
@@ -200,14 +210,16 @@ func main() {
 	zap.ReplaceGlobals(logger) // Not recommended, but I'm lazy
 	defer logger.Sync()
 
-	r := gin.Default()
-	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
-	r.Use(ginzap.RecoveryWithZap(logger, true))
-	r.Use(rateLimitHandler()) // Gin scoped overall API rate limit. NOT granular
-
 	opts := initGraphOpts()
 	defer opts.Database.Close()
 	defer opts.RedisClient.Close()
+
+	r := gin.Default()
+	r.Use(ginzap.Ginzap(logger, time.RFC3339, true))
+	r.Use(ginzap.RecoveryWithZap(logger, true))
+	r.Use(limiter.AuthenticatedRateLimitHandler(opts.RedisClient, opts.UnauthenticatedRateLimit, opts.AuthenticatedRateLimit))
+	// TODO: remove and replace with above functionality
+	r.Use(rateLimitHandler()) // Gin scoped overall API rate limit. NOT granular
 
 	r.POST("/query", graphqlHandler(opts))
 	r.GET("/", playgroundHandler())
