@@ -18,6 +18,44 @@ Had it been done that way, the complexity of the return value would create too m
 * Redis for caching
 * [Tyk](https://tyk.io/) for API authentication
 
+## Architecture
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full breakdown of services, data flow, and infrastructure notes.
+
+```mermaid
+flowchart LR
+    subgraph External["External"]
+        Client["API Consumer<br/>(GraphQL client)"]
+        DigimonNet["digimon.net<br/>(reference site)"]
+    end
+
+    subgraph Pipeline["Data Pipeline — DigivolutionScraper (Airflow)"]
+        Airflow["Airflow scheduler/webserver<br/>DAGs: scrape → transform → load"]
+    end
+
+    subgraph API["Main GraphQL API — DigimonQL (this repo)"]
+        Gin["gin HTTP server :8080<br/>GET / → Playground, POST /query → GraphQL"]
+        RepoLayer["db.DigimonRepository<br/>(MongoDBRepository / LocalDigimonRepository fallback)"]
+        RateLimit["limiter/ (Redis-backed rate limiting)"]
+    end
+
+    subgraph Data["Data Stores"]
+        Mongo[("MongoDB<br/>digimon documents")]
+        Redis[("Redis<br/>rate-limit counters")]
+        Postgres[("Postgres<br/>Airflow metadata DB only")]
+    end
+
+    Client -->|HTTPS| Gin
+    Gin --> RepoLayer
+    Gin --> RateLimit
+    RateLimit --> Redis
+    RepoLayer --> Mongo
+
+    Airflow -->|scrapes| DigimonNet
+    Airflow -->|loads data| Mongo
+    Airflow -->|metadata| Postgres
+```
+
 ## Running locally
 
 ### Docker Compose
