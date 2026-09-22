@@ -16,7 +16,6 @@ Had it been done that way, the complexity of the return value would create too m
 * API written in Golang (this repo)
 * MongoDB persistent data storage
 * Redis for caching
-* [Tyk](https://tyk.io/) for API authentication
 
 ## Architecture
 

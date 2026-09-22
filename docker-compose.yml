@@ -9,7 +9,7 @@ services:
       COUNT_QUERY_LIMIT: 10 # low query limit for testing rate limiter
     ports:
       - 8081:8081
-    depends_on: [mongo, redis, auth-tyk]
+    depends_on: [mongo, redis]
     restart: on-failure
   mongo:
     image: mongo
@@ -30,19 +30,3 @@ services:
     environment:
       REDIS_ARGS: "--requirepass default"
     restart: always
-  auth-tyk:
-    image: tykio/tyk-gateway:v5.14.0
-    depends_on: [redis]
-    restart: on-failure
-    ports:
-      - 8080:8080
-    environment:
-      TYK_GW_LISTENPORT: 8080
-      TYK_GW_STORAGE_TYPE: redis
-      TYK_GW_STORAGE_HOST: redis
-      TYK_GW_STORAGE_USERNAME: default
-      TYK_GW_STORAGE_PASSWORD: default
-      TYK_GW_STORAGE_PORT: 6379
-      TYK_GW_SECRET: "secret" # This is fine. It's just local
-      TYK_GW_GLOBALSESSIONLIFETIME: 7200
-      TYK_GW_LOGFORMAT: "json"
