@@ -134,63 +134,12 @@ python smoke_test.py
 
 ### Scraping the data
 
-#### Adding a new Digimon reference
-Occassionally, there will be a new Digimon that gets added to the Encyclopedia (Reference Book). 
-The directory name/ID for the new Digimon must be added to the `./scraper/.names.py` list, and
-then the scraper needs to be rerun. 
+All of the scraping has been reworked and productionalized as a part of the data pipeline
+repo, [DigivolutionScraper](https://github.com/SaxyPandaBear/DigivolutionScraper).
 
-You can run against the entire set of names, or just prepend the new data by supplying a command-line argument:
-```bash
-python scrape.py --names heliosboamon
-```
-
-Note that the list of names supplied may create an ordering issue with the output JSON array, but ultimately that
-doesn't matter for the destination because MongoDB is indexing on the `_id` field, and not the order of the data.
-
-#### Digimon Info
-* [Digimon Reference Book](https://digimon.net/reference_en/)
-
-#### Evolution Info
-The evolution information that is written in `./scraper/evolutions.py` is painstakingly handwritten by me. 
-No AI could do this work. I have to map digivolutions across canons, dropping the ones that aren't present
-in the Encyclopedia, and also translating some from their English localized names in order to properly reference
-them.
-For this, I am excluding (to my best ability) pendulum evolutions and most warp evolutions.
-I am also ignoring X Antibody characters for the time being.
-
-Wikimon as a source includes every possible evolution, so it is feasible to scrape
-that site to generate the evolution mappings. That being said, some of them are
-technically correct but I just personally disagree. For example, for the protagonist
-partners in Digimon Beatbreak, they list the Ultimate forms as warp evolutions: https://wikimon.net/Scourge_Chiropmon
-
-* [Digimon Story: Time Stranger](https://www.grindosaur.com/en/games/digimon-story-time-stranger/digimon)
-    * Completed ✅
-* [Digimon World: Next Order](https://www.grindosaur.com/en/games/digimon-world-next-order/digimon)
-    * Completed ✅
-* [Digimon Story: Cyber Sleuth](https://www.grindosaur.com/en/games/digimon-story-cyber-sleuth/digimon)
-    * Completed ✅
-* [Wikimon](https://wikimon.net/) to fill the gaps
-
-IMPORTANT NOTE: Just running the scraper does not provide the full set of data right now, 
-as things need to be added manually such as the mappings for evolutions and mode changes.
-
-These steps assumes you already have a Python virtual environment configured in `./scraper`
-```bash
-cd scraper && source bin/activate
-```
-
-Install dependencies and execute the scraper:
-```bash
-pip install -r requirements.txt && python scrape.py
-```
-
-The script should output a JSON file to `../data/digimon.json`, which will then be used to serve data
-in the GraphQL API.
-
-#### Importing scraped data into MongoDB
-The intent is to back the API with MongoDB documents. After installing `mongoimport`, you can directly
-load the output JSON file into a collection. Note that out of the box, the JSON output from the scraper
-is incomplete.
+### Importing scraped data into MongoDB
+The intent is to back the API with MongoDB documents. After installing `mongoimport`, 
+you can directly load the output JSON file into a collection. 
 
 Load the data to your desired MongoDB instance:
 ```bash
