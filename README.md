@@ -13,13 +13,11 @@ Note: It is an intentional design choice because of the one-to-many nature of di
 Had it been done that way, the complexity of the return value would create too much overhead because of the branching.
 
 ## Tech stack
-* API written in Golang (this repo)
-* MongoDB persistent data storage
-* Redis for caching
+This repo specifically is Golang, talking to MongoDB for persistent storage and Redis for caching/rate limiting.
+The project as a whole also includes a separate data pipeline repo (Python, Apache Airflow) and a Postgres instance
+backing that pipeline's own metadata - see the diagram below.
 
 ## Architecture
-
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the full breakdown of services, data flow, and infrastructure notes.
 
 ```mermaid
 flowchart LR
@@ -131,11 +129,6 @@ Then run it (this expects an `API_BASE_URL` environment variable to be set to th
 ```bash
 python smoke_test.py
 ```
-
-### Scraping the data
-
-All of the scraping has been reworked and productionalized as a part of the data pipeline
-repo, [DigivolutionScraper](https://github.com/SaxyPandaBear/DigivolutionScraper).
 
 ### Importing scraped data into MongoDB
 The intent is to back the API with MongoDB documents. After installing `mongoimport`, 
